@@ -28,9 +28,11 @@ INCLUDEPATH += include
 
 SOURCES += src/main.cpp\
            src/moedacoin.cpp \
-           src/mcwallet.cpp
+           src/mcwallet.cpp \
+           src/mcdb.cpp
 
 HEADERS  += include/moedacoin.hpp \
-    include/mcwallet.hpp
+    include/mcwallet.hpp \
+    include/mcdb.hpp
 
 FORMS    += ui/moedacoin.ui
