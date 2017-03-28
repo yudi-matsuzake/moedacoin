@@ -69,6 +69,24 @@ void MCWallet::writePubKeyToMemBuf (std::vector<char>& membuf)
 		membuf.insert(std::end(membuf), buffer, buffer+n_data);
 }
 
+std::string MCWallet::writePubKeyToMemBuf()
+{
+	std::string str;
+
+	std::unique_ptr<BIO, decltype(&BIO_free)>
+		membio(BIO_new(BIO_s_mem()), BIO_free);
+
+	writePubKey(membio);
+
+	char buffer[BUFSIZ];
+	long n_data;
+
+	while((n_data = BIO_read(membio.get(), buffer, BUFSIZ)) > 0)
+		str.append(buffer, n_data);
+
+	return str;
+}
+
 void MCWallet::writeToMemBuf (std::vector<char>& membuf)
 {
 	membuf.clear();

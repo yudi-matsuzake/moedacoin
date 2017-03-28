@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = topcoin
+TARGET = moedacoin
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -28,9 +28,15 @@ INCLUDEPATH += include
 
 SOURCES += src/main.cpp\
            src/moedacoin.cpp \
-           src/mcwallet.cpp
+           src/mcwallet.cpp \
+    src/publickeyviewdialog.cpp
 
 HEADERS  += include/moedacoin.hpp \
-    include/mcwallet.hpp
+    include/mcwallet.hpp \
+    include/publickeyviewdialog.hpp
 
-FORMS    += ui/moedacoin.ui
+FORMS    += ui/moedacoin.ui \
+    ui/publickeyviewdialog.ui
+
+RESOURCES += \
+    res/moedacoin.qrc

@@ -50,6 +50,7 @@ public:
 	  * @param membuf	std::vector to hold the pem in the memory
 	  */
 	void writePubKeyToMemBuf (std::vector<char>& membuf);
+	std::string writePubKeyToMemBuf();
 
 	/** Writes the wallet in the pkcs pem format.
 	  *
