@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,11 +30,13 @@ INCLUDEPATH += include
 SOURCES += src/main.cpp\
            src/moedacoin.cpp \
            src/mcwallet.cpp \
+           src/mcdb.cpp \
     src/publickeyviewdialog.cpp
 
 HEADERS  += include/moedacoin.hpp \
     include/mcwallet.hpp \
-    include/publickeyviewdialog.hpp
+    include/publickeyviewdialog.hpp \
+    include/mcdb.hpp
 
 FORMS    += ui/moedacoin.ui \
     ui/publickeyviewdialog.ui

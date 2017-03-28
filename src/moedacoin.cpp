@@ -106,7 +106,7 @@ int MoedaCoin::alreadyOpenWalletWarning()
 
 void MoedaCoin::generateNewWallet()
 {
-	qDebug << "generate new wallet";
+	qDebug() << "generate new wallet";
 	std::unique_ptr<MCWallet> new_wallet(
 				new MCWallet());
 
@@ -116,7 +116,7 @@ void MoedaCoin::generateNewWallet()
 
 void MoedaCoin::openWallet(QString &filename)
 {
-	qDebug << "open a file " << filename;
+	qDebug() << "open a file " << filename;
 	std::unique_ptr<MCWallet> new_wallet(
 				new MCWallet(filename.toStdString()));
 
@@ -125,11 +125,11 @@ void MoedaCoin::openWallet(QString &filename)
 
 void MoedaCoin::on_actionPublicKey_triggered()
 {
-	qDebug << "showing the public key:";
+	qDebug() << "showing the public key:";
 	std::string pubkey_str = wallet->writePubKeyToMemBuf();
 
-	qDebug << pubkey;
 	QString pubkey = QString::fromStdString(pubkey_str);
+	qDebug() << pubkey;
 
 	std::unique_ptr<PublicKeyViewDialog> dialog(
 				new PublicKeyViewDialog(this, pubkey));
