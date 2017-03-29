@@ -49,7 +49,7 @@ float walletTotalCoins(QList<Transaction> tList, QString pKey){
 
 
 QSqlError MCDB::createNewDatabase(){
-	QSqlQuery q(this->tp_db);
+	QSqlQuery q(this->mc_db);
 	if (!q.exec(QString("create table users(pub_key varchar(256) primary key)")))
 		return q.lastError();
 
@@ -70,7 +70,7 @@ QSqlError MCDB::createNewDatabase(){
 
 
 QSqlError MCDB::addNewUser(QString pub_key, QString name){
-	QSqlQuery q(this->tp_db);
+	QSqlQuery q(this->mc_db);
 	q.prepare("INSERT INTO users(pub_key) VALUES (:p)");
 	q.bindValue(":p", pub_key);
 	if (!q.exec())
@@ -86,7 +86,7 @@ QSqlError MCDB::addNewUser(QString pub_key, QString name){
 
 
 QSqlError MCDB::addNewTransaction(QString from, QString to, QString miner, float value){
-	QSqlQuery q(this->tp_db);
+	QSqlQuery q(this->mc_db);
 	q.prepare("INSERT INTO transactions(fromKey, toKey, minKey, value) VALUES (:fk, :tk, :mk, :v)");
 	q.bindValue(":fk", from);
 	q.bindValue(":tk", to);
@@ -100,7 +100,7 @@ QSqlError MCDB::addNewTransaction(QString from, QString to, QString miner, float
 
 
 QList<Transaction> MCDB::getAllTransactions(){
-	QSqlQuery q("SELECT * FROM transactions", this->tp_db);
+	QSqlQuery q("SELECT * FROM transactions", this->mc_db);
 	QList<Transaction> result;
 	while (q.next()){
 			result.append(Transaction(q.value(0).toInt(), q.value(1).toString(),
@@ -113,7 +113,7 @@ QList<Transaction> MCDB::getAllTransactions(){
 
 
 QList<Transaction> MCDB::getTransactionsByKey(QString pKey){
-	QSqlQuery q(this->tp_db);
+	QSqlQuery q(this->mc_db);
 	q.prepare("SELECT * FROM transactions WHERE toKey like :k OR fromKey like :k");
 	q.bindValue(":k", pKey);
 	QList<Transaction> result;
@@ -135,10 +135,10 @@ MCDB::MCDB(const QString& path){
 QSqlError MCDB::initDB(const QString& path)
 {
 	bool fileExistance = fileExists(path);
-	tp_db = QSqlDatabase::addDatabase("QSQLITE");
-	tp_db.setDatabaseName(path);
+	mc_db = QSqlDatabase::addDatabase("QSQLITE");
+	mc_db.setDatabaseName(path);
 
-	if (!tp_db.open()){
+	if (!mc_db.open()){
 		qDebug() << "Conexão com Database falhou.";
 		return QSqlError();
 	}
@@ -156,7 +156,7 @@ QSqlError MCDB::initDB(const QString& path)
 
 
 QList<User> MCDB::getAllUsers(){
-	QSqlQuery q("SELECT * FROM info", this->tp_db);
+	QSqlQuery q("SELECT * FROM info", this->mc_db);
 	QList<User> result;
 
 	while (q.next()){
@@ -169,5 +169,5 @@ QList<User> MCDB::getAllUsers(){
 
 MCDB::~MCDB()
 {
-	this->tp_db.close();
+	this->mc_db.close();
 }
