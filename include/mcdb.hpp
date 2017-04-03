@@ -1,11 +1,12 @@
-#ifndef TPDB_H
-#define TPDB_H
+#ifndef MCDB_H
+#define MCDB_H
 
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QFileInfo>
 #include <QSqlQuery>
 #include <QDebug>
+#include "transaction.hpp"
 
 /**
  * @brief Function to check if a certain file exists given a path
@@ -14,59 +15,6 @@
  */
 
 bool fileExists(QString path);
-
-/**
- * @brief The User class
- */
-
-class User
-{
-
-public:
-	/**
-	 * @brief User constructor without iniatializing anything
-	 */
-	explicit User();
-	/**
-	 * @brief User constructor overload
-	 * @param name Name of the user
-	 * @param pKey Public key of the user
-	 */
-	explicit User(QString name, QString pKey);
-	QString publicKey;
-	QString nome;
-private:
-
-};
-
-/**
- * @brief The Transaction class
- */
-
-class Transaction
-{
-public:
-	/**
-	 * @brief Transaction constructor without initialazing anything
-	 */
-	explicit Transaction();
-	/**
-	 * @brief Transaction constructor overload
-	 * @param id Id of the transaction
-	 * @param fKey Sender Publick key
-	 * @param tkey Destinatary Public key
-	 * @param minKey Miner Public key
-	 * @param v Value of the transaction
-	 */
-	explicit Transaction(int id, QString fKey, QString tkey, QString minKey, float v);
-	QString fromKey;
-	QString toKey;
-	QString minKey;
-	float value;
-	int id;
-	~Transaction();
-private:
-};
 
 
 /**
@@ -93,17 +41,6 @@ public:
 	 */
 	explicit MCDB(const QString& path);
 
-	/**
-	 * @brief Function to initialize the SQlDatabase attribute. If the database doesn't exist, creates a new one.
-	 * @param path Path to the SQLite database
-	 * @return Error, if so
-	 */
-	QSqlError initDB(const QString& path);
-	/**
-	 * @brief Function to create a new moedaCoin database
-	 * @return Error, if so
-	 */
-	QSqlError createNewDatabase();
 	/**
 	 * @brief Function to insert a new user in the database
 	 * @param pub_key Public key of the new user
@@ -142,6 +79,17 @@ public:
 
 private:
 	QSqlDatabase mc_db;
+	/**
+	 * @brief Function to initialize the SQlDatabase attribute. If the database doesn't exist, creates a new one.
+	 * @param path Path to the SQLite database
+	 * @return Error, if so
+	 */
+	QSqlError initDB(const QString& path);
+	/**
+	 * @brief Function to create a new moedaCoin database
+	 * @return Error, if so
+	 */
+	QSqlError createNewDatabase();
 };
 
-#endif // TPDB_H
+#endif // MCDB_H

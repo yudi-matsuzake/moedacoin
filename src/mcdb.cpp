@@ -6,42 +6,18 @@ bool fileExists(QString path){
 	return info.exists() && info.isFile();
 }
 
-User::User(){
-
-}
-
-User::User(QString name, QString pKey){
-	this->nome = name;
-	this->publicKey = pKey;
-}
-
-Transaction::Transaction(int id, QString fKey, QString tKey, QString mKey, float v){
-	this->value = v;
-	this->fromKey = fKey;
-	this->toKey = tKey;
-	this->minKey = mKey;
-	this->id = id;
-}
-
-
-Transaction::Transaction(){
-
-}
-
-
-Transaction::~Transaction(){
-
-}
 
 float walletTotalCoins(QList<Transaction> tList, QString pKey){
 	float total = 10;
 	foreach (Transaction t, tList) {
-			if (!(QString::compare(pKey, t.toKey))){
-				total += t.value;
+			if (!(QString::compare(pKey, t.getToKey()))){
+				total += t.getValue();
 			}
 
+			else if (!(QString::compare(pKey, t.getFromKey())))
+				total -= t.getValue();
 			else
-				total -= t.value;
+				total += 100/(float)t.getId();
 	}
 
 	return total;
@@ -114,7 +90,7 @@ QList<Transaction> MCDB::getAllTransactions(){
 
 QList<Transaction> MCDB::getTransactionsByKey(QString pKey){
 	QSqlQuery q(this->mc_db);
-	q.prepare("SELECT * FROM transactions WHERE toKey like :k OR fromKey like :k");
+	q.prepare("SELECT * FROM transactions WHERE toKey like :k OR fromKey like :k OR minKey like :k");
 	q.bindValue(":k", pKey);
 	QList<Transaction> result;
 	q.exec();
