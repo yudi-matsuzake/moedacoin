@@ -136,3 +136,21 @@ void MoedaCoin::on_actionPublicKey_triggered()
 
 	dialog->exec();
 }
+
+void MoedaCoin::on_actionSendMoedacoin_triggered()
+{
+	unsigned char s[5] = { 'Y', 'u', 'd', 'i', '\0' };
+	MCSignature sig = MCCrypto::signature(*wallet, s, 5);
+	QJsonObject j;
+	assert(sig.write(j));
+
+	MCSignature sig0;
+	assert(sig0.read(j));
+
+	qDebug() << "is mine: " << sig.verifySignature(*wallet);
+
+	MCWallet w;
+	w.generateKeys();
+	qDebug() << "is from generated: " << sig.verifySignature(w);
+
+}

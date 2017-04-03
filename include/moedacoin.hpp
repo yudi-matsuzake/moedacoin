@@ -3,11 +3,13 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QJsonDocument>
 
 #include <memory>
 #include <vector>
 
 #include "mcwallet.hpp"
+#include "mcsignature.hpp"
 #include "publickeyviewdialog.hpp"
 
 namespace Ui {
@@ -31,6 +33,8 @@ private slots:
 	void on_actionNewWallet_triggered();
 
 	void on_actionPublicKey_triggered();
+
+	void on_actionSendMoedacoin_triggered();
 
 private:
 	Ui::MoedaCoin *ui;
