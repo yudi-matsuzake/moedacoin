@@ -71,3 +71,6 @@ CMakeLists.txt.user*
 
 # doxygen
 doc
+
+# youcompleteme
+.ycm_extra_conf.py
