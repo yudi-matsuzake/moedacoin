@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 include(FindOpenSSL)
 
 # find the QtWidgets library
-find_package(Qt5 REQUIRED COMPONENTS Core Widgets Sql)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Sql Network)
 
 # src, headers, ui and res
 set(SRC_PATH "src")
@@ -44,4 +44,4 @@ include_directories(${INCLUDE_PATH})
 
 # use the Widgets module from Qt 5.
 target_link_libraries(
-	moedacoin Qt5::Core Qt5::Widgets Qt5::Sql ${OPENSSL_LIBRARIES})
+	moedacoin Qt5::Core Qt5::Widgets Qt5::Sql Qt5::Network ${OPENSSL_LIBRARIES})

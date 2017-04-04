@@ -1,10 +1,18 @@
 #ifndef MOEDANETWORK_HPP
 #define MOEDANETWORK_HPP
 
+#include <assert.h>
+
 #include <QString>
 #include <QUdpSocket>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QDataStream>
 #include <QHostAddress>
 #include <QJsonObject>
+#include <QJsonDocument>
+
+//#include "request.hpp"
 
 /**
  * @brief Class to abstract network operations and
@@ -14,18 +22,6 @@ class MoedaNetwork : public QObject
 {
 Q_OBJECT
 public:
-	/*
-	 * inner classes
-	 */
-	class Peer;
-	class Request;
-	class Response;
-	class RequestDB;
-	class ResponseDB;
-	class RequestMiner;
-	class ResponseMiner;
-	class RequestUpdate;
-
 	MoedaNetwork();
 
 	/**
@@ -35,43 +31,18 @@ public:
 	void sendMulticast(QByteArray datagram);
 
 	/**
-	 * @brief Represents a peer connected to the host.
+	 * @brief send
+	 * @param request
 	 */
-	class Peer{
-	public:
-		Peer();
-		Peer(QHostAddress address,
-			QString name,
-			qint16 port);
-
-		~Peer();
-
-		QHostAddress getPeerAddress();
-		qint16 getPeerPort();
-
-		void read(const QJsonObject &json);
-		void write(QJsonObject &json);
-
-	private:
-		QHostAddress address;
-		QString name;
-		qint16 port;
-	};
-
-	/**
-	  * @brief type of the socket connection
-	  */
-	typedef enum {
-		TCP,
-		UDP,
-		UDP_MULTICAST
-	}SocketType;
+	//	void send(MCRequestDB& request);
 
 signals:
 	void datagramReceiveFromMulticast(QByteArray datagram);
 
 private slots:
 	void onReceiveDatagrams();
+
+	void onResponseDB();
 
 private:
 	/*

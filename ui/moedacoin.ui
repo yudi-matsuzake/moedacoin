@@ -52,7 +52,7 @@
      </layout>
     </item>
     <item row="1" column="0">
-     <widget class="QTableView" name="transactionsTableView">
+     <widget class="QTableWidget" name="transactionTableWidget">
       <property name="sortingEnabled">
        <bool>true</bool>
       </property>

@@ -1,6 +1,3 @@
-#include <QFileDialog>
-#include <QDebug>
-
 #include "moedacoin.hpp"
 #include "ui_moedacoin.h"
 
@@ -11,6 +8,7 @@ MoedaCoin::MoedaCoin(QWidget *parent) :
 {
 	ui->setupUi(this);
 	setButtons();
+	initTable();
 }
 
 MoedaCoin::~MoedaCoin()
@@ -40,6 +38,29 @@ void MoedaCoin::setButtons()
 
 	}
 
+}
+
+void MoedaCoin::initTable()
+{
+	QStringList headers;
+	ui->transactionTableWidget->setRowCount(1);
+	ui->transactionTableWidget->setColumnCount(5);
+
+	ui->transactionTableWidget
+		->verticalHeader()
+		->setVisible(false);
+
+	ui->transactionTableWidget
+		->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+	headers <<	tr("ID")
+		<<	tr("From")
+		<<	tr("To")
+		<<	tr("Value")
+		<<	tr("Miner");
+
+	ui->transactionTableWidget
+		->setHorizontalHeaderLabels(headers);
 }
 
 void MoedaCoin::on_actionSaveWallet_triggered()
@@ -139,18 +160,14 @@ void MoedaCoin::on_actionPublicKey_triggered()
 
 void MoedaCoin::on_actionSendMoedacoin_triggered()
 {
-	unsigned char s[5] = { 'Y', 'u', 'd', 'i', '\0' };
-	MCSignature sig = MCCrypto::signature(*wallet, s, 5);
-	QJsonObject j;
-	assert(sig.write(j));
+	std::unique_ptr<SendCoinDialog> dialog(
+			new SendCoinDialog());
 
-	MCSignature sig0;
-	assert(sig0.read(j));
+	if(dialog->exec() == QDialog::Accepted){
+		QString pubkey = dialog->getPubKey();
+		float value = dialog->getValue();
 
-	qDebug() << "is mine: " << sig.verifySignature(*wallet);
-
-	MCWallet w;
-	w.generateKeys();
-	qDebug() << "is from generated: " << sig.verifySignature(w);
-
+		qDebug() << "send " << value << " to pubkey: ";
+		qDebug() << pubkey;
+	}
 }

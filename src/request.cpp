@@ -1,26 +1,28 @@
 #include "request.hpp"
 
 /*
- * request
+ * request -------------------------------------------------
  */
-MoedaNetwork::Request::Request()
+const QString MCRequest::JSON_TYPE = "request";
+
+MCRequest::MCRequest()
 {}
 
-MoedaNetwork::Request::~Request()
+MCRequest::~MCRequest()
 {}
 
 /*
- * request_db
+ * request_db ---------------------------------------------
  */
-const QString MoedaNetwork::RequestDB::method = "request_db";
+const QString MCRequestDB::method = "request_db";
 
-MoedaNetwork::RequestDB::RequestDB()
+MCRequestDB::MCRequestDB()
 {}
 
-MoedaNetwork::RequestDB::~RequestDB()
+MCRequestDB::~MCRequestDB()
 {}
 
-bool MoedaNetwork::RequestDB::read(const QJsonObject &json)
+bool MCRequestDB::read(const QJsonObject &json)
 {
 	if(this->method != json["method"].toString())
 		return false;
@@ -28,48 +30,75 @@ bool MoedaNetwork::RequestDB::read(const QJsonObject &json)
 	return true;
 }
 
-bool MoedaNetwork::RequestDB::write(QJsonObject &json)
+bool MCRequestDB::write(QJsonObject &json)
 {
-	json["method"] = method;
+	json["type"]	= JSON_TYPE;
+	json["method"]	= method;
+
+	json["ip"]		= ip.toString();
+	json["port"]	= port;
 
 	return true;
+}
+
+void MCRequestDB::setIp(QHostAddress& ip)
+{
+	this->ip = ip;
+}
+
+void MCRequestDB::setPort(qint16 port)
+{
+	this->port = port;
 }
 
 /*
- * response
+ * response -----------------------------------------------
  */
-MoedaNetwork::Response::Response()
+MCResponse::MCResponse()
 {}
 
-MoedaNetwork::Response::~Response()
+MCResponse::~MCResponse()
 {}
 
 /*
- * response_db
+ * peer ---------------------------------------------------
  */
-const QString MoedaNetwork::ResponseDB::method = "response_db";
-
-MoedaNetwork::ResponseDB::ResponseDB()
+MCPeer::MCPeer()
 {}
 
-MoedaNetwork::ResponseDB::~ResponseDB()
+MCPeer::MCPeer(
+		QHostAddress address,
+		QString name,
+		qint16 port)
+{
+	this->address	= address;
+	this->port		= port;
+	this->name		= name;
+}
+
+MCPeer::~MCPeer()
 {}
 
-bool MoedaNetwork::ResponseDB::read(const QJsonObject &json)
+QHostAddress MCPeer::getPeerAddress()
 {
-	if(this->method != json["method"].toString())
-		return false;
-
-	return true;
+	return this->address;
 }
 
-bool MoedaNetwork::ResponseDB::write(QJsonObject &json)
+qint16 MCPeer::getPeerPort()
 {
-	json["method"] = method;
-
-	return true;
+	return this->port;
 }
 
-/* class RequestMiner; */
-/* class ResponseMiner; */
-/* class RequestUpdate; */
+void MCPeer::read(const QJsonObject &json)
+{
+	this->address	= QHostAddress(json["peerAddress"].toString());
+	this->port		= json["peerPort"].toInt();
+	this->name		= json["peerAddress"].toString();
+}
+
+void MCPeer::write(QJsonObject &json)
+{
+	json["peerAddress"]	= this->address.toString();
+	json["peerPort"]	= this->port;
+	json["peerName"]	= this->name;
+}

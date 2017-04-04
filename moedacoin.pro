@@ -36,7 +36,8 @@ SOURCES += src/main.cpp\
     src/moedanetwork.cpp \
     src/request.cpp \
     src/mcsignature.cpp \
-    src/mccrypto.cpp
+    src/mccrypto.cpp \
+    src/sendcoindialog.cpp
 
 HEADERS  += include/moedacoin.hpp \
     include/mcwallet.hpp \
@@ -46,10 +47,12 @@ HEADERS  += include/moedacoin.hpp \
     include/moedanetwork.hpp \
     include/request.hpp \
     include/mcsignature.hpp \
-    include/mccrypto.hpp
+    include/mccrypto.hpp \
+    include/sendcoindialog.hpp
 
 FORMS    += ui/moedacoin.ui \
-    ui/publickeyviewdialog.ui
+    ui/publickeyviewdialog.ui \
+    ui/sendcoindialog.ui
 
 RESOURCES += \
     res/moedacoin.qrc

@@ -1,46 +1,98 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include "moedanetwork.hpp"
-
+#include <QObject>
 #include <QJsonObject>
+#include <QHostAddress>
+
+class MCResponseDB;
+
+/**
+  * @brief type of the socket connection
+  */
+typedef enum {
+	TCP,
+	UDP,
+	UDP_MULTICAST
+}SocketType;
+
+/**
+ * @brief Represents a peer connected to the host.
+ */
+class MCPeer{
+public:
+	MCPeer();
+	MCPeer(QHostAddress address,
+		QString name,
+		qint16 port);
+
+	~MCPeer();
+
+	QHostAddress getPeerAddress();
+	qint16 getPeerPort();
+
+	void read(const QJsonObject &json);
+	void write(QJsonObject &json);
+
+private:
+	QHostAddress address;
+	QString name;
+	qint16 port;
+};
+
+
+/*
+ * REQUESTS -----------------------------------
+ */
 
 /**
  * @brief Base class of a request
  */
-class MoedaNetwork::Request{
+class MCRequest : public QObject {
+	Q_OBJECT
 public:
-	Request();
-	virtual ~Request();
+	MCRequest();
+	virtual ~MCRequest();
 
 	virtual bool read(const QJsonObject& json) = 0;
 	virtual bool write(QJsonObject& json) = 0;
 
-private:
+protected:
+	const static QString JSON_TYPE;
 	const static QString method;
 	static const SocketType sType;
+	MCPeer peer;
 };
 
-class MoedaNetwork::RequestDB : private MoedaNetwork::Request{
+class MCRequestDB : public MCRequest{
+	Q_OBJECT
+signals:
+	void receiveResponse();
+
 public:
-	RequestDB();
-	~RequestDB();
+	MCRequestDB();
+	~MCRequestDB();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
 
+	void setIp(QHostAddress& ip);
+	void setPort(qint16 port);
+
 private:
-	const static QString method;
-	static const SocketType sType = MoedaNetwork::UDP_MULTICAST;
+	const static	QString method;
+	static const	SocketType sType = UDP_MULTICAST;
+	QHostAddress	ip;
+	qint16			port;
 };
 
 /**
  * @brief Class that represents a request of miner to a transaction
  */
-class MoedaNetwork::RequestMiner : public MoedaNetwork::Request{
+class MCRequestMiner : public MCRequest{
 public:
-	RequestMiner();
-	~RequestMiner();
+	MCRequestMiner();
+	~MCRequestMiner();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
@@ -57,10 +109,10 @@ private:
 /**
  * @brief Class that represents a request to update the database
  */
-class MoedaNetwork::RequestUpdate : public MoedaNetwork::Request{
+class MCRequestUpdate : public MCRequest{
 public:
-	RequestUpdate();
-	~RequestUpdate();
+	MCRequestUpdate();
+	~MCRequestUpdate();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
@@ -72,13 +124,17 @@ private:
 	QString minerSign;
 };
 
+/*
+ * RESPONSES ---------------------------------------------------
+ */
+
 /**
  * @brief Base class of a response;
  */
-class MoedaNetwork::Response : public MoedaNetwork::Request{
+class MCResponse : public MCRequest{
 public:
-	Response();
-	virtual ~Response();
+	MCResponse();
+	virtual ~MCResponse();
 
 	virtual bool read(const QJsonObject& json) = 0;
 	virtual bool write(QJsonObject& json) = 0;
@@ -87,10 +143,10 @@ public:
 /**
  * @brief Class that represents a database response
  */
-class MoedaNetwork::ResponseDB : public MoedaNetwork::Response{
+class MCResponseDB : public MCResponse{
 public:
-	ResponseDB();
-	~ResponseDB();
+	MCResponseDB();
+	~MCResponseDB();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
@@ -98,16 +154,16 @@ public:
 private:
 	const static QString method;
 	static const SocketType sType;
-	QByteArray db_data;
+	QByteArray dbData;
 };
 
 /**
  * @brief Class that represents a miner's validation of a trasaction
  */
-class MoedaNetwork::ResponseMiner : public MoedaNetwork::Response{
+class MCResponseMiner : public MCResponse{
 public:
-	ResponseMiner();
-	~ResponseMiner();
+	MCResponseMiner();
+	~MCResponseMiner();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);

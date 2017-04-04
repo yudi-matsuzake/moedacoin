@@ -4,13 +4,19 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QJsonDocument>
+#include <QFileDialog>
+#include <QDebug>
+#include <QHeaderView>
 
 #include <memory>
 #include <vector>
 
+#include "request.hpp"
+#include "moedanetwork.hpp"
 #include "mcwallet.hpp"
 #include "mcsignature.hpp"
 #include "publickeyviewdialog.hpp"
+#include "sendcoindialog.hpp"
 
 namespace Ui {
 class MoedaCoin;
@@ -47,6 +53,12 @@ private:
 	 * on `walletSucessfullyOpen`.
 	 */
 	void setButtons();
+
+	/**
+	 * @brief auxialiar function to inicialize the transactions table
+	 * on `walletSucessfullyOpen`.
+	 */
+	void initTable();
 
 	/**
 	 * @brief generate a new pair of keys and put in `wallet`

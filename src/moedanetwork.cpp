@@ -1,9 +1,12 @@
 #include "moedanetwork.hpp"
 
 const QString MoedaNetwork::MULTICAST_IP = "239.255.43.21";
-const short MoedaNetwork::MULTICAST_PORT = 45454;
+const short MoedaNetwork::MULTICAST_PORT = 6060;
 const short MoedaNetwork::TTL = 1;
 
+/*
+ * moedanetwork
+ */
 MoedaNetwork::MoedaNetwork()
 	: multicastSocket(this),
 	  multicastSendSocket(this),
@@ -39,7 +42,7 @@ void MoedaNetwork::onReceiveDatagrams()
 		multicastSocket.readDatagram(datagram.data(), datagram.size());
 	}
 
-	qDebug() << "emit";
+	qDebug() << "Receive multicast: " << datagram;
 	emit datagramReceiveFromMulticast(datagram);
 }
 
@@ -51,42 +54,48 @@ void MoedaNetwork::sendMulticast(QByteArray datagram)
 									  MULTICAST_PORT);
 }
 
-MoedaNetwork::Peer::Peer()
-{}
-
-MoedaNetwork::Peer::Peer(
-		QHostAddress address,
-		QString name,
-		qint16 port)
+/*
+ * Response / Request DB
+ *
+ */
+void MoedaNetwork::onResponseDB()
 {
-	this->address	= address;
-	this->port		= port;
-	this->name		= name;
+	QTcpServer* tcpServer = dynamic_cast<QTcpServer*>(sender());
+	assert(tcpServer);
+
+	QTcpSocket* s = tcpServer->nextPendingConnection();
+	QDataStream datastream;
+
+	datastream.setDevice(s);
+	datastream.setVersion(QDataStream::Qt_5_8);
+
+	datastream.startTransaction();
+
+	QString response;
+	datastream >> response;
+
+	qDebug() << "Receive response " << response;
+
+	tcpServer->close();
+	delete tcpServer;
 }
 
-MoedaNetwork::Peer::~Peer()
-{}
+//void MoedaNetwork::send(MCRequestDB& request)
+//{
+//	QTcpServer* tcpServer = new QTcpServer(this);
 
-QHostAddress MoedaNetwork::Peer::getPeerAddress()
-{
-	return this->address;
-}
+//	assert(tcpServer->listen());
+//	qDebug() << "Listening for ResponseDB in "
+//			 << tcpServer->serverAddress().toString()
+//			 << " and port " << tcpServer->serverPort();
 
-qint16 MoedaNetwork::Peer::getPeerPort()
-{
-	return this->port;
-}
+//	connect(tcpServer, SIGNAL(newConnection()), this, SLOT(onResponseDB()));
+//	QHostAddress h = tcpServer->serverAddress();
+//	request.setIp(h);
+//	request.setPort(tcpServer->serverPort());
 
-void MoedaNetwork::Peer::read(const QJsonObject &json)
-{
-	this->address	= QHostAddress(json["peerAddress"].toString());
-	this->port		= json["peerPort"].toInt();
-	this->name		= json["peerAddress"].toString();
-}
-
-void MoedaNetwork::Peer::write(QJsonObject &json)
-{
-	json["peerAddress"]	= this->address.toString();
-	json["peerPort"]	= this->port;
-	json["peerName"]	= this->name;
-}
+//	QJsonObject j;
+//	request.write(j);
+//	QJsonDocument jdoc(j);
+//	sendMulticast(jdoc.toBinaryData());
+//}
