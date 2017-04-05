@@ -59,7 +59,7 @@ public:
 	void write (const std::string& filename);
 	void write (const char* filename);
 
-	/** Writes the keus in the pkcs pem format in a memory buffer.
+	/** Writes the keys in the pkcs pem format in a memory buffer.
 	  * TODO: A more datailed description of writeToMemBuf.
 	  *
 	  * @param membuf	std::vector to holds the pem in the memory

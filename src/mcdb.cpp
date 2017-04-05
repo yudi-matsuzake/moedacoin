@@ -1,6 +1,25 @@
 #include "mcdb.hpp"
 #include <iostream>
 
+QString MCDB::toBase64(){
+	QFile f(dbPath);
+	f.open(QIODevice::ReadOnly);
+	QByteArray array = f.readAll();
+	std::vector<unsigned char> buffer(array.begin(), array.end());
+	return MCCrypto::base64Encode(buffer);
+}
+
+void MCDB::setFromBase64(QString baseBuffer){
+	mc_db.close();
+	std::vector<unsigned char> result = MCCrypto::base64Decode(baseBuffer);
+	QFile f(dbPath);
+	f.open(QIODevice::ReadWrite | QIODevice::Truncate);
+	f.write((char*)result.data(), result.size());
+	f.close();
+	this->initDB(dbPath);
+}
+
+
 bool fileExists(QString path){
 	QFileInfo info(path);
 	return info.exists() && info.isFile();
@@ -106,6 +125,7 @@ QList<Transaction> MCDB::getTransactionsByKey(QString pKey){
 
 MCDB::MCDB(const QString& path){
 	this->initDB(path);
+	this->dbPath = path;
 }
 
 QSqlError MCDB::initDB(const QString& path)

@@ -17,6 +17,7 @@
 #include "mcsignature.hpp"
 #include "publickeyviewdialog.hpp"
 #include "sendcoindialog.hpp"
+#include "mcdb.hpp"
 
 namespace Ui {
 class MoedaCoin;
@@ -48,6 +49,8 @@ private:
 	bool walletSuccefullyOpen;
 	std::unique_ptr<MCWallet> wallet;
 
+	std::unique_ptr<MCDB> moedaDB;
+
 	/**
 	 * @brief sets the enable property of main window based
 	 * on `walletSucessfullyOpen`.
@@ -59,6 +62,12 @@ private:
 	 * on `walletSucessfullyOpen`.
 	 */
 	void initTable();
+
+	/**
+	 * @brief function to atualize table based on a list of  transactions
+	 * @param List of all transactions
+	 */
+	void atualizeTable(QList<Transaction> transactions);
 
 	/**
 	 * @brief generate a new pair of keys and put in `wallet`

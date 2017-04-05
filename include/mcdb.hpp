@@ -7,6 +7,7 @@
 #include <QSqlQuery>
 #include <QDebug>
 #include "transaction.hpp"
+#include "mccrypto.hpp"
 
 /**
  * @brief Function to check if a certain file exists given a path
@@ -75,10 +76,14 @@ public:
 	 */
 	QList<User> getAllUsers();
 
+	QString toBase64();
+
+	void setFromBase64(QString baseBuffer);
 	~MCDB();
 
 private:
 	QSqlDatabase mc_db;
+	QString dbPath;
 	/**
 	 * @brief Function to initialize the SQlDatabase attribute. If the database doesn't exist, creates a new one.
 	 * @param path Path to the SQLite database

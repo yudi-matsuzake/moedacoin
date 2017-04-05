@@ -43,7 +43,7 @@ void MoedaCoin::setButtons()
 void MoedaCoin::initTable()
 {
 	QStringList headers;
-	ui->transactionTableWidget->setRowCount(1);
+	ui->transactionTableWidget->setRowCount(0);
 	ui->transactionTableWidget->setColumnCount(5);
 
 	ui->transactionTableWidget
@@ -61,6 +61,25 @@ void MoedaCoin::initTable()
 
 	ui->transactionTableWidget
 		->setHorizontalHeaderLabels(headers);
+
+}
+
+void MoedaCoin::atualizeTable(QList<Transaction> transactions){
+
+	int transactionsSize = transactions.size();
+	ui->transactionTableWidget->setRowCount(transactionsSize);
+	for (int i = 0; i < transactionsSize; i++){
+		ui->transactionTableWidget->setItem(
+			i, 0, new QTableWidgetItem(QString::number(transactions.at(i).getId())));
+		ui->transactionTableWidget->setItem(
+			i, 1, new QTableWidgetItem(transactions.at(i).getFromKey()));
+		ui->transactionTableWidget->setItem(
+			i, 2, new QTableWidgetItem(transactions.at(i).getToKey()));
+		ui->transactionTableWidget->setItem(
+			i, 3, new QTableWidgetItem(QString::number(transactions.at(i).getValue())));
+		ui->transactionTableWidget->setItem(
+			i, 4, new QTableWidgetItem(transactions.at(i).getMinKey()));
+	}
 }
 
 void MoedaCoin::on_actionSaveWallet_triggered()
@@ -91,6 +110,10 @@ void MoedaCoin::on_actionOpenWallet_triggered()
 	if(file.exists() && !file.isDir()){
 		openWallet(wallet_filename);
 		walletSuccefullyOpen = true;
+		std::unique_ptr<MCDB> tempDB(
+					new MCDB("padraoDB.sqlite"));
+		moedaDB = std::move(tempDB);
+		this->atualizeTable(moedaDB->getAllTransactions());
 		setButtons();
 	}
 }
@@ -110,6 +133,10 @@ void MoedaCoin::on_actionNewWallet_triggered()
 
 			generateNewWallet();
 			walletSuccefullyOpen = true;
+			std::unique_ptr<MCDB> tempDB(
+					new MCDB("padraoDB.sqlite"));
+			moedaDB = std::move(tempDB);
+			this->atualizeTable(moedaDB->getAllTransactions());
 			setButtons();
 		}
 	}
