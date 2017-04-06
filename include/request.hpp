@@ -71,6 +71,8 @@ public:
 	void setListeningAddress(QHostAddress& ip);
 	void setListeningPort(int port);
 
+	MCAddress getResponseAddress() const;
+
 private:
 	const static	QString method;
 	MCAddress	responseAddress;
@@ -140,14 +142,19 @@ protected:
 class MCResponseDB : public MCResponse{
 public:
 	MCResponseDB();
+	MCResponseDB(MCRequestDB* request);
 	~MCResponseDB();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
 
+	QString getDbData();
+	void setDbData(QString);
+	MCRequestDB* getRequest();
 private:
 	const static QString method;
 	QString dbData;
+	MCRequestDB* request;
 };
 
 /**

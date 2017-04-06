@@ -35,10 +35,11 @@ public:
 	void sendMulticast(QByteArray datagram);
 
 	/**
-	 * @brief send
-	 * @param request
+	 * @brief Send a MCRequest
+	 * @param class inherited from MCRequest
 	 */
 	void send(MCRequestDB* request);
+	void send(MCResponseDB* request);
 
 	/** Gets the ip of the machine.
 	  *
@@ -47,7 +48,6 @@ public:
 	QHostAddress getMachineIP (void);
 
 signals:
-	void datagramReceiveFromMulticast(QByteArray datagram);
 
 	/**
 	 * @brief This signal is emitted when a response to db_request
@@ -55,10 +55,18 @@ signals:
 	 * @param response pointer to response; if the timeout was reached
 	 * 	  this will point to null
 	 */
-	void dbResponse(MCRequestDB* request, MCResponseDB* response);
+	void responseDB(MCRequestDB* request, MCResponseDB* response);
+
+	/** This signal is emitted when a requestDB was received.
+	  * TODO: A more datailed description of receiveRequestDB.
+	  *
+	  * @param requestDB	a reference to the requestDB
+	  */
+	void requestDB (MCRequestDB* requestDB);
 
 private slots:
 	void onReceiveDatagrams();
+	void onResponseDbConnect();
 
 private:
 	/*
@@ -72,10 +80,7 @@ private:
 	QUdpSocket multicastSendSocket;
 	QHostAddress multicastGroupAddress;
 
-	/*
-	 *
-	 */
-	std::unique_ptr<QSignalMapper> signalMapper;
+	std::map<QTcpSocket*, MCResponseDB*> responseDbMap;
 
 	void initMulticast();
 };

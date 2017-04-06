@@ -110,7 +110,7 @@ bool MCRequestDB::read(const QJsonObject &json)
 	if(json["method"].toString() != method)
 		return false;
 
-	if(!responseAddress.read(json))
+	if(!responseAddress.read(json["responseAddress"].toObject()))
 		return false;
 
 	return true;
@@ -138,6 +138,11 @@ void MCRequestDB::setListeningAddress(QHostAddress& ip)
 void MCRequestDB::setListeningPort(int port)
 {
 	this->responseAddress.setPort(port);
+}
+
+MCAddress MCRequestDB::getResponseAddress() const
+{
+	return responseAddress;
 }
 
 /*
@@ -173,11 +178,19 @@ const QString MCResponseDB::method = "response_db";
 MCResponseDB::MCResponseDB()
 {}
 
-MCResponseDB::~MCResponseDB()
+MCResponseDB::MCResponseDB(MCRequestDB* request)
+	: request(request)
 {}
+
+MCResponseDB::~MCResponseDB()
+{
+	if(request)
+		delete request;
+}
 
 bool MCResponseDB::read(const QJsonObject &json)
 {
+	qDebug() << "MCResponseDB";
 	if(!MCResponse::read(json))
 		return false;
 
@@ -198,4 +211,19 @@ bool MCResponseDB::write(QJsonObject &json)
 	json["dbData"] = this->dbData;
 
 	return true;
+}
+
+QString MCResponseDB::getDbData()
+{
+	return this->dbData;
+}
+
+void MCResponseDB::setDbData(QString s)
+{
+	this->dbData = s;
+}
+
+MCRequestDB* MCResponseDB::getRequest()
+{
+	return this->request;
 }

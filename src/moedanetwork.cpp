@@ -10,8 +10,7 @@ const short MoedaNetwork::TTL = 1;
 MoedaNetwork::MoedaNetwork()
 	: multicastSocket(this),
 	  multicastSendSocket(this),
-	  multicastGroupAddress(MULTICAST_IP),
-	  signalMapper(new QSignalMapper(this))
+	  multicastGroupAddress(MULTICAST_IP)
 {
 	initMulticast();
 }
@@ -45,8 +44,17 @@ void MoedaNetwork::onReceiveDatagrams()
 
 	QJsonDocument doc = QJsonDocument::fromBinaryData(datagram);
 
+	QJsonObject json = doc.object();
 	qDebug().noquote() << "Receive multicast: " << doc.toJson(QJsonDocument::Indented);
-	emit datagramReceiveFromMulticast(datagram);
+
+	{
+		MCRequestDB* r = new MCRequestDB;
+		if(r->read(json))
+			emit requestDB(r);
+		else
+			delete r;
+		return;
+	}
 }
 
 void MoedaNetwork::sendMulticast(QByteArray datagram)
@@ -66,6 +74,52 @@ QHostAddress MoedaNetwork::getMachineIP()
 	}
 
 	return QHostAddress();
+}
+
+void MoedaNetwork::onResponseDbConnect()
+{
+	qDebug() << "connected!";
+	QTcpSocket* socket = dynamic_cast<QTcpSocket*>(sender());
+	assert(socket);
+
+	auto iterator = responseDbMap.find(socket);
+	MCResponseDB* request = iterator->second;
+	responseDbMap.erase(iterator);
+
+	QJsonObject json;
+	request->write(json);
+
+	QJsonDocument doc(json);
+	QByteArray buffer(doc.toBinaryData());
+	socket->write(buffer);
+	socket->disconnectFromHost();
+}
+
+void MoedaNetwork::send(MCResponseDB* response)
+{
+	qDebug() << "Seding db_response";
+
+	QTcpSocket* socket = new QTcpSocket(this);
+	connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
+	connect(socket, SIGNAL(connected()), this, SLOT(onResponseDbConnect()));
+
+	/*
+	 * maps socket to response
+	 */
+	std::pair<QTcpSocket*, MCResponseDB*> pair(socket, response);
+	responseDbMap.insert(pair);
+
+	/*
+	 * retrieve information about request
+	 */
+	MCAddress addr = response
+			->getRequest()
+			->getResponseAddress();
+
+	qDebug() << "Connecting to..."
+		 << addr.getAddress() << ":"
+		 << addr.getPort();
+	socket->connectToHost(addr.getAddress(), addr.getPort());
 }
 
 void MoedaNetwork::send(MCRequestDB* request)
@@ -90,7 +144,7 @@ void MoedaNetwork::send(MCRequestDB* request)
 	 * connect to a mcserver
 	 */
 	connect(mcserver, SIGNAL(response(MCRequestDB*, MCResponseDB*)),
-		this, SIGNAL(dbResponse(MCRequestDB*, MCResponseDB*)));
+		this, SIGNAL(responseDB(MCRequestDB*, MCResponseDB*)));
 
 	/*
 	 * send the json

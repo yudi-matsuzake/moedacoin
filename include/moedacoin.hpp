@@ -35,18 +35,23 @@ public:
 	~MoedaCoin();
 
 private slots:
+
 	void on_actionSaveWallet_triggered();
 	void on_actionOpenWallet_triggered();
 	void on_actionNewWallet_triggered();
 	void on_actionPublicKey_triggered();
 	void on_actionSendMoedacoin_triggered();
 	void on_actionAbout_triggered();
-	void onDBResponse(MCRequestDB* request, MCResponseDB* response);
+
+	void onResponseDB(MCRequestDB* request, MCResponseDB* response);
+	void onRequestDB(MCRequestDB* request);
 
 private:
 	Ui::MoedaCoin *ui;
 
+	bool dbIsUpdated;
 	bool walletSuccefullyOpen;
+
 	std::unique_ptr<MCWallet> wallet;
 
 	std::unique_ptr<MCDB> moedaDB;
@@ -66,9 +71,8 @@ private:
 
 	/**
 	 * @brief function to atualize table based on a list of  transactions
-	 * @param List of all transactions
 	 */
-	void atualizeTable(QList<Transaction> transactions);
+	void atualizeTable();
 
 	/**
 	 * @brief generate a new pair of keys and put in `wallet`
@@ -87,6 +91,11 @@ private:
 	 * @param filename is a path to the wallet file
 	 */
 	void openWallet(QString& filename);
+
+	/**
+	 * @brief createNewBD function
+	 */
+	void createNewBD();
 };
 
 #endif // TOPCOIN_HPP

@@ -4,6 +4,7 @@
 MoedaCoin::MoedaCoin(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MoedaCoin),
+	dbIsUpdated(false),
 	walletSuccefullyOpen(false),
 	net(new MoedaNetwork)
 {
@@ -11,10 +12,22 @@ MoedaCoin::MoedaCoin(QWidget *parent) :
 	setButtons();
 	initTable();
 
+	/*
+	 * connects onResponseDB to the response of DB
+	 */
 	connect(net.get(),
-		SIGNAL(dbResponse(MCRequestDB*, MCResponseDB*)),
+		SIGNAL(responseDB(MCRequestDB*, MCResponseDB*)),
 		this,
-		SLOT(onDBResponse(MCRequestDB*, MCResponseDB*)));
+		SLOT(onResponseDB(MCRequestDB*, MCResponseDB*)));
+
+	/*
+	 * connects onRequestDB to the request of DB
+	 */
+	connect(net.get(),
+		SIGNAL(requestDB(MCRequestDB*)),
+		this,
+		SLOT(onRequestDB(MCRequestDB*)));
+
 }
 
 MoedaCoin::~MoedaCoin()
@@ -74,7 +87,10 @@ void MoedaCoin::initTable()
 
 }
 
-void MoedaCoin::atualizeTable(QList<Transaction> transactions){
+void MoedaCoin::atualizeTable()
+{
+	QList<Transaction> transactions =
+			moedaDB->getAllTransactions();
 
 	int transactionsSize = transactions.size();
 	ui->transactionTableWidget->setRowCount(transactionsSize);
@@ -92,12 +108,13 @@ void MoedaCoin::atualizeTable(QList<Transaction> transactions){
 	}
 }
 
-void MoedaCoin::onDBResponse(
+void MoedaCoin::onResponseDB(
 	MCRequestDB* request,
 	MCResponseDB* response)
 {
 	if(!response){
 		qDebug() << "IEY! I'm updated (probabily)";
+		dbIsUpdated = true;
 	}else{
 		qDebug() << "Updating db...";
 		QJsonObject j;
@@ -105,12 +122,24 @@ void MoedaCoin::onDBResponse(
 		qDebug().noquote()
 			<< "response_db: "
 			<< QJsonDocument(j).toBinaryData();
+
+		moedaDB->setFromBase64(response->getDbData());
+		this->atualizeTable();
 	}
 
-	if(request)
-		delete request;
-	if(response)
-		delete response;
+}
+
+void MoedaCoin::onRequestDB(MCRequestDB* request)
+{
+	qDebug() << "MoedaCoin: onRequestDB";
+	if(dbIsUpdated){
+		qDebug() << "Sending my DB";
+		MCResponseDB* response = new MCResponseDB(request);
+		response->setDbData(moedaDB->toBase64());
+		net->send(response);
+	}else{
+		qDebug() << "My DB is not updated :(";
+	}
 }
 
 void MoedaCoin::on_actionSaveWallet_triggered()
@@ -141,10 +170,8 @@ void MoedaCoin::on_actionOpenWallet_triggered()
 	if(file.exists() && !file.isDir()){
 		openWallet(wallet_filename);
 		walletSuccefullyOpen = true;
-		std::unique_ptr<MCDB> tempDB(
-					new MCDB("padraoDB.sqlite"));
-		moedaDB = std::move(tempDB);
-		this->atualizeTable(moedaDB->getAllTransactions());
+		createNewBD();
+		this->atualizeTable();
 		setButtons();
 	}
 }
@@ -164,10 +191,8 @@ void MoedaCoin::on_actionNewWallet_triggered()
 
 			generateNewWallet();
 			walletSuccefullyOpen = true;
-			std::unique_ptr<MCDB> tempDB(
-					new MCDB("padraoDB.sqlite"));
-			moedaDB = std::move(tempDB);
-			this->atualizeTable(moedaDB->getAllTransactions());
+			createNewBD();
+			this->atualizeTable();
 			setButtons();
 		}
 	}
@@ -202,6 +227,21 @@ void MoedaCoin::openWallet(QString &filename)
 	wallet = std::move(new_wallet);
 }
 
+void MoedaCoin::createNewBD()
+{
+	std::string pubk = wallet->pubKeyToString();
+	std::string pubKey(pubk.substr(0, 4) + ".sqlite");
+	qDebug() << pubKey.c_str();
+
+	std::unique_ptr<MCDB> tempDB(new MCDB(
+					QString(pubKey.c_str())));
+
+	moedaDB = std::move(tempDB);
+
+	MCRequestDB* r = new MCRequestDB();
+	net->send(r);
+}
+
 void MoedaCoin::on_actionPublicKey_triggered()
 {
 	qDebug() << "showing the public key:";
@@ -233,7 +273,4 @@ void MoedaCoin::on_actionSendMoedacoin_triggered()
 
 void MoedaCoin::on_actionAbout_triggered()
 {
-	/* mcserver test */
-	/* MCRequestDB* r = new MCRequestDB(); */
-	/* net->send(r); */
 }
