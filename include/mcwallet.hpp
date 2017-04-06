@@ -168,6 +168,13 @@ public:
 			unsigned char* signature,
 			unsigned int signature_size);
 
+	/** Convert pubKey to a std::string.
+	  * TODO: A more datailed description of pubKeyToString.
+	  *
+	  * @return	a std::string hex-formatted of pubKey
+	  */
+	std::string pubKeyToString (void);
+
 private:
 	RSA* rsa;
 

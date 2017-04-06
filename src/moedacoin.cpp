@@ -205,10 +205,11 @@ void MoedaCoin::openWallet(QString &filename)
 void MoedaCoin::on_actionPublicKey_triggered()
 {
 	qDebug() << "showing the public key:";
+	qDebug() << QString::fromStdString(wallet->pubKeyToString());
+
 	std::string pubkey_str = wallet->writePubKeyToMemBuf();
 
 	QString pubkey = QString::fromStdString(pubkey_str);
-	qDebug() << pubkey;
 
 	std::unique_ptr<PublicKeyViewDialog> dialog(
 				new PublicKeyViewDialog(this, pubkey));

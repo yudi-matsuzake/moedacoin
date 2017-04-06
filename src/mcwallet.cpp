@@ -341,3 +341,20 @@ bool MCWallet::signVerify (
 			signature_size,
 			rsa);
 }
+
+std::string MCWallet::pubKeyToString (void)
+{
+	std::unique_ptr<BIO, decltype(&BIO_free)>
+		membio(BIO_new(BIO_s_mem()), BIO_free);
+
+	assert(BN_print(membio.get(), rsa->n) == 1);
+
+	BUF_MEM* mem = NULL;
+	BIO_get_mem_ptr(membio.get(), &mem);
+	assert(mem != NULL);
+
+	assert(mem && mem->data && mem->length);
+	std::string s(mem->data, mem->length);
+
+	return s;
+}
