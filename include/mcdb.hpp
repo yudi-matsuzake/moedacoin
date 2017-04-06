@@ -76,13 +76,21 @@ public:
 	 */
 	QList<User> getAllUsers();
 
+	/**
+	 * @brief Function to convert the database into base64
+	 * @return QString of the encoding
+	 */
 	QString toBase64();
 
+	/**
+	 * @brief Function to load a full database based on a base64 file
+	 * @param base64 buffer containing all the database
+	 */
 	void setFromBase64(QString baseBuffer);
 	~MCDB();
 
 private:
-	QSqlDatabase mc_db;
+	std::unique_ptr<QSqlDatabase> mc_db;
 	QString dbPath;
 	/**
 	 * @brief Function to initialize the SQlDatabase attribute. If the database doesn't exist, creates a new one.

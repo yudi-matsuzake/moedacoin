@@ -10,7 +10,7 @@ QString MCDB::toBase64(){
 }
 
 void MCDB::setFromBase64(QString baseBuffer){
-	mc_db.close();
+	(*mc_db).close();
 	std::vector<unsigned char> result = MCCrypto::base64Decode(baseBuffer);
 	QFile f(dbPath);
 	f.open(QIODevice::ReadWrite | QIODevice::Truncate);
@@ -44,7 +44,7 @@ float walletTotalCoins(QList<Transaction> tList, QString pKey){
 
 
 QSqlError MCDB::createNewDatabase(){
-	QSqlQuery q(this->mc_db);
+	QSqlQuery q(*mc_db);
 	if (!q.exec(QString("create table users(pub_key varchar(256) primary key)")))
 		return q.lastError();
 
@@ -65,7 +65,7 @@ QSqlError MCDB::createNewDatabase(){
 
 
 QSqlError MCDB::addNewUser(QString pub_key, QString name){
-	QSqlQuery q(this->mc_db);
+	QSqlQuery q(*mc_db);
 	q.prepare("INSERT INTO users(pub_key) VALUES (:p)");
 	q.bindValue(":p", pub_key);
 	if (!q.exec())
@@ -81,7 +81,7 @@ QSqlError MCDB::addNewUser(QString pub_key, QString name){
 
 
 QSqlError MCDB::addNewTransaction(QString from, QString to, QString miner, float value){
-	QSqlQuery q(this->mc_db);
+	QSqlQuery q(*mc_db);
 	q.prepare("INSERT INTO transactions(fromKey, toKey, minKey, value) VALUES (:fk, :tk, :mk, :v)");
 	q.bindValue(":fk", from);
 	q.bindValue(":tk", to);
@@ -95,7 +95,7 @@ QSqlError MCDB::addNewTransaction(QString from, QString to, QString miner, float
 
 
 QList<Transaction> MCDB::getAllTransactions(){
-	QSqlQuery q("SELECT * FROM transactions", this->mc_db);
+	QSqlQuery q("SELECT * FROM transactions", *mc_db);
 	QList<Transaction> result;
 	while (q.next()){
 			result.append(Transaction(q.value(0).toInt(), q.value(1).toString(),
@@ -108,7 +108,7 @@ QList<Transaction> MCDB::getAllTransactions(){
 
 
 QList<Transaction> MCDB::getTransactionsByKey(QString pKey){
-	QSqlQuery q(this->mc_db);
+	QSqlQuery q(*mc_db);
 	q.prepare("SELECT * FROM transactions WHERE toKey like :k OR fromKey like :k OR minKey like :k");
 	q.bindValue(":k", pKey);
 	QList<Transaction> result;
@@ -124,6 +124,11 @@ QList<Transaction> MCDB::getTransactionsByKey(QString pKey){
 
 
 MCDB::MCDB(const QString& path){
+
+	std::unique_ptr<QSqlDatabase> new_mcdb(
+				new QSqlDatabase());
+
+	mc_db = std::move(new_mcdb);
 	this->initDB(path);
 	this->dbPath = path;
 }
@@ -131,10 +136,10 @@ MCDB::MCDB(const QString& path){
 QSqlError MCDB::initDB(const QString& path)
 {
 	bool fileExistance = fileExists(path);
-	mc_db = QSqlDatabase::addDatabase("QSQLITE");
-	mc_db.setDatabaseName(path);
+	*mc_db = QSqlDatabase::addDatabase("QSQLITE");
+	(*mc_db).setDatabaseName(path);
 
-	if (!mc_db.open()){
+	if (!(*mc_db).open()){
 		qDebug() << "Conexão com Database falhou.";
 		return QSqlError();
 	}
@@ -152,7 +157,7 @@ QSqlError MCDB::initDB(const QString& path)
 
 
 QList<User> MCDB::getAllUsers(){
-	QSqlQuery q("SELECT * FROM info", this->mc_db);
+	QSqlQuery q("SELECT * FROM info", *mc_db);
 	QList<User> result;
 
 	while (q.next()){
@@ -165,5 +170,5 @@ QList<User> MCDB::getAllUsers(){
 
 MCDB::~MCDB()
 {
-	this->mc_db.close();
+	(*mc_db).close();
 }
