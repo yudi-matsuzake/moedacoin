@@ -38,10 +38,10 @@ private slots:
 	void on_actionSaveWallet_triggered();
 	void on_actionOpenWallet_triggered();
 	void on_actionNewWallet_triggered();
-
 	void on_actionPublicKey_triggered();
-
 	void on_actionSendMoedacoin_triggered();
+	void on_actionAbout_triggered();
+	void onDBResponse(MCRequestDB* request, MCResponseDB* response);
 
 private:
 	Ui::MoedaCoin *ui;
@@ -50,6 +50,7 @@ private:
 	std::unique_ptr<MCWallet> wallet;
 
 	std::unique_ptr<MCDB> moedaDB;
+	std::unique_ptr<MoedaNetwork> net;
 
 	/**
 	 * @brief sets the enable property of main window based

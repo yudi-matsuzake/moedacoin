@@ -8,36 +8,28 @@
 class MCResponseDB;
 
 /**
-  * @brief type of the socket connection
-  */
-typedef enum {
-	TCP,
-	UDP,
-	UDP_MULTICAST
-}SocketType;
-
-/**
  * @brief Represents a peer connected to the host.
  */
-class MCPeer{
+class MCAddress{
 public:
-	MCPeer();
-	MCPeer(QHostAddress address,
-		QString name,
-		qint16 port);
+	MCAddress();
+	MCAddress(QHostAddress address,
+		int port);
 
-	~MCPeer();
+	~MCAddress();
 
-	QHostAddress getPeerAddress();
-	qint16 getPeerPort();
+	QHostAddress getAddress();
+	int getPort();
 
-	void read(const QJsonObject &json);
-	void write(QJsonObject &json);
+	void setAddress(QHostAddress& addr);
+	void setPort(int port);
+
+	bool read(const QJsonObject &json);
+	bool write(QJsonObject &json);
 
 private:
 	QHostAddress address;
-	QString name;
-	qint16 port;
+	int port;
 };
 
 
@@ -54,14 +46,14 @@ public:
 	MCRequest();
 	virtual ~MCRequest();
 
-	virtual bool read(const QJsonObject& json) = 0;
-	virtual bool write(QJsonObject& json) = 0;
+	virtual bool read(const QJsonObject& json);
+	virtual bool write(QJsonObject& json);
+
+	void setPeer(QHostAddress& addr, int port);
 
 protected:
 	const static QString JSON_TYPE;
-	const static QString method;
-	static const SocketType sType;
-	MCPeer peer;
+	MCAddress peer;
 };
 
 class MCRequestDB : public MCRequest{
@@ -76,14 +68,12 @@ public:
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
 
-	void setIp(QHostAddress& ip);
-	void setPort(qint16 port);
+	void setListeningAddress(QHostAddress& ip);
+	void setListeningPort(int port);
 
 private:
 	const static	QString method;
-	static const	SocketType sType = UDP_MULTICAST;
-	QHostAddress	ip;
-	qint16			port;
+	MCAddress	responseAddress;
 };
 
 /**
@@ -100,7 +90,6 @@ public:
 private:
 
 	const static QString method;
-	static const SocketType sType;
 	QString sign;
 	// transaction
 	// challenge?
@@ -119,7 +108,6 @@ public:
 
 private:
 	const static QString method;
-	static const SocketType sType;
 	//transaction
 	QString minerSign;
 };
@@ -131,13 +119,19 @@ private:
 /**
  * @brief Base class of a response;
  */
-class MCResponse : public MCRequest{
+class MCResponse : public QObject {
+	Q_OBJECT
 public:
 	MCResponse();
 	virtual ~MCResponse();
 
-	virtual bool read(const QJsonObject& json) = 0;
-	virtual bool write(QJsonObject& json) = 0;
+	virtual bool read(const QJsonObject& json);
+	virtual bool write(QJsonObject& json);
+
+protected:
+	const static QString JSON_TYPE;
+	const static QString method;
+	MCAddress peer;
 };
 
 /**
@@ -153,8 +147,7 @@ public:
 
 private:
 	const static QString method;
-	static const SocketType sType;
-	QByteArray dbData;
+	QString dbData;
 };
 
 /**
@@ -170,7 +163,6 @@ public:
 
 private:
 	const static QString method;
-	static const SocketType sType;
 	bool accepted;
 	QString sign;
 

@@ -10,7 +10,8 @@ const short MoedaNetwork::TTL = 1;
 MoedaNetwork::MoedaNetwork()
 	: multicastSocket(this),
 	  multicastSendSocket(this),
-	  multicastGroupAddress(MULTICAST_IP)
+	  multicastGroupAddress(MULTICAST_IP),
+	  signalMapper(new QSignalMapper(this))
 {
 	initMulticast();
 }
@@ -42,60 +43,60 @@ void MoedaNetwork::onReceiveDatagrams()
 		multicastSocket.readDatagram(datagram.data(), datagram.size());
 	}
 
-	qDebug() << "Receive multicast: " << datagram;
+	QJsonDocument doc = QJsonDocument::fromBinaryData(datagram);
+
+	qDebug().noquote() << "Receive multicast: " << doc.toJson(QJsonDocument::Indented);
 	emit datagramReceiveFromMulticast(datagram);
 }
 
 void MoedaNetwork::sendMulticast(QByteArray datagram)
 {
 	multicastSendSocket.writeDatagram(datagram.data(),
-									  datagram.size(),
-									  multicastGroupAddress,
-									  MULTICAST_PORT);
+					  datagram.size(),
+					  multicastGroupAddress,
+					  MULTICAST_PORT);
 }
 
-/*
- * Response / Request DB
- *
- */
-void MoedaNetwork::onResponseDB()
+QHostAddress MoedaNetwork::getMachineIP()
 {
-	QTcpServer* tcpServer = dynamic_cast<QTcpServer*>(sender());
-	assert(tcpServer);
+	for (const auto &address : QNetworkInterface::allAddresses()){
+		if ( address.protocol() == QAbstractSocket::IPv4Protocol
+			&& address != QHostAddress(QHostAddress::LocalHost))
+			return address;
+	}
 
-	QTcpSocket* s = tcpServer->nextPendingConnection();
-	QDataStream datastream;
-
-	datastream.setDevice(s);
-	datastream.setVersion(QDataStream::Qt_5_8);
-
-	datastream.startTransaction();
-
-	QString response;
-	datastream >> response;
-
-	qDebug() << "Receive response " << response;
-
-	tcpServer->close();
-	delete tcpServer;
+	return QHostAddress();
 }
 
-//void MoedaNetwork::send(MCRequestDB& request)
-//{
-//	QTcpServer* tcpServer = new QTcpServer(this);
+void MoedaNetwork::send(MCRequestDB* request)
+{
+	MCServer* mcserver = new MCServer(request, this);
 
-//	assert(tcpServer->listen());
-//	qDebug() << "Listening for ResponseDB in "
-//			 << tcpServer->serverAddress().toString()
-//			 << " and port " << tcpServer->serverPort();
+	assert(mcserver->listen());
+	mcserver->timerStart();
+	qDebug() << "Listening for ResponseDB in "
+			 << mcserver->serverAddress().toString()
+			 << " and port " << mcserver->serverPort();
 
-//	connect(tcpServer, SIGNAL(newConnection()), this, SLOT(onResponseDB()));
-//	QHostAddress h = tcpServer->serverAddress();
-//	request.setIp(h);
-//	request.setPort(tcpServer->serverPort());
+	/*
+	 * get the machine ip and set the MCAddress
+	 */
+	QHostAddress ip = getMachineIP();
+	request->setPeer(ip, 0);
+	request->setListeningAddress(ip);
+	request->setListeningPort(mcserver->serverPort());
 
-//	QJsonObject j;
-//	request.write(j);
-//	QJsonDocument jdoc(j);
-//	sendMulticast(jdoc.toBinaryData());
-//}
+	/*
+	 * connect to a mcserver
+	 */
+	connect(mcserver, SIGNAL(response(MCRequestDB*, MCResponseDB*)),
+		this, SIGNAL(dbResponse(MCRequestDB*, MCResponseDB*)));
+
+	/*
+	 * send the json
+	 */
+	QJsonObject j;
+	request->write(j);
+	QJsonDocument jdoc(j);
+	sendMulticast(jdoc.toBinaryData());
+}

@@ -4,11 +4,17 @@
 MoedaCoin::MoedaCoin(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MoedaCoin),
-	walletSuccefullyOpen(false)
+	walletSuccefullyOpen(false),
+	net(new MoedaNetwork)
 {
 	ui->setupUi(this);
 	setButtons();
 	initTable();
+
+	connect(net.get(),
+		SIGNAL(dbResponse(MCRequestDB*, MCResponseDB*)),
+		this,
+		SLOT(onDBResponse(MCRequestDB*, MCResponseDB*)));
 }
 
 MoedaCoin::~MoedaCoin()
@@ -47,6 +53,10 @@ void MoedaCoin::initTable()
 	ui->transactionTableWidget->setColumnCount(5);
 
 	ui->transactionTableWidget
+		->horizontalHeader()
+		->setSectionResizeMode(QHeaderView::Stretch);
+
+	ui->transactionTableWidget
 		->verticalHeader()
 		->setVisible(false);
 
@@ -80,6 +90,27 @@ void MoedaCoin::atualizeTable(QList<Transaction> transactions){
 		ui->transactionTableWidget->setItem(
 			i, 4, new QTableWidgetItem(transactions.at(i).getMinKey()));
 	}
+}
+
+void MoedaCoin::onDBResponse(
+	MCRequestDB* request,
+	MCResponseDB* response)
+{
+	if(!response){
+		qDebug() << "IEY! I'm updated (probabily)";
+	}else{
+		qDebug() << "Updating db...";
+		QJsonObject j;
+		response->write(j);
+		qDebug().noquote()
+			<< "response_db: "
+			<< QJsonDocument(j).toBinaryData();
+	}
+
+	if(request)
+		delete request;
+	if(response)
+		delete response;
 }
 
 void MoedaCoin::on_actionSaveWallet_triggered()
@@ -197,4 +228,11 @@ void MoedaCoin::on_actionSendMoedacoin_triggered()
 		qDebug() << "send " << value << " to pubkey: ";
 		qDebug() << pubkey;
 	}
+}
+
+void MoedaCoin::on_actionAbout_triggered()
+{
+	/* mcserver test */
+	/* MCRequestDB* r = new MCRequestDB(); */
+	/* net->send(r); */
 }
