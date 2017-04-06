@@ -1,6 +1,7 @@
 #ifndef MOEDANETWORK_HPP
 #define MOEDANETWORK_HPP
 
+#include <memory>
 #include <assert.h>
 
 #include <QString>
@@ -11,8 +12,11 @@
 #include <QHostAddress>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QSignalMapper>
+#include <QtNetwork>
 
-//#include "request.hpp"
+#include "request.hpp"
+#include "mcserver.hpp"
 
 /**
  * @brief Class to abstract network operations and
@@ -20,7 +24,7 @@
  */
 class MoedaNetwork : public QObject
 {
-Q_OBJECT
+	Q_OBJECT
 public:
 	MoedaNetwork();
 
@@ -34,15 +38,27 @@ public:
 	 * @brief send
 	 * @param request
 	 */
-	//	void send(MCRequestDB& request);
+	void send(MCRequestDB* request);
+
+	/** Gets the ip of the machine.
+	  *
+	  * @return the ip of the network interface
+	  */
+	QHostAddress getMachineIP (void);
 
 signals:
 	void datagramReceiveFromMulticast(QByteArray datagram);
 
+	/**
+	 * @brief This signal is emitted when a response to db_request
+	 * @param request pointer to request this must be freed
+	 * @param response pointer to response; if the timeout was reached
+	 * 	  this will point to null
+	 */
+	void dbResponse(MCRequestDB* request, MCResponseDB* response);
+
 private slots:
 	void onReceiveDatagrams();
-
-	void onResponseDB();
 
 private:
 	/*
@@ -55,6 +71,11 @@ private:
 	QUdpSocket multicastSocket;
 	QUdpSocket multicastSendSocket;
 	QHostAddress multicastGroupAddress;
+
+	/*
+	 *
+	 */
+	std::unique_ptr<QSignalMapper> signalMapper;
 
 	void initMulticast();
 };
