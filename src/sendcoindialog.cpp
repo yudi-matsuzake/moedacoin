@@ -23,7 +23,7 @@ QString SendCoinDialog::getPubKey()
 	return ui->pubkeyTextEdit->toPlainText();
 }
 
-float SendCoinDialog::getValue()
+double SendCoinDialog::getValue()
 {
-	return ui->mccLineEdit->text().toFloat();
+	return ui->mccLineEdit->text().toDouble();
 }

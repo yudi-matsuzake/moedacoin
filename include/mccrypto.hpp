@@ -13,8 +13,10 @@ namespace MCCrypto{
 	 * @return	the decoded/encode msg
 	 */
 	QString base64Encode(std::vector<unsigned char>& v);
+	QString base64Encode(const QString& v);
 
 	std::vector<unsigned char> base64Decode(QString& encode);
+	QString base64Decode(const QString& v);
 
 	/**
 	 * @brief	simple wrapper for sign method of `wallet`

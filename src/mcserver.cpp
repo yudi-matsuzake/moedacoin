@@ -1,6 +1,6 @@
 #include "mcserver.hpp"
 
-const unsigned int MCServer::WAIT_RESPONSE_MS = 20000;
+const unsigned int MCServer::WAIT_RESPONSE_MS = 10000;
 
 MCServer::MCServer(MCRequestDB* r, QObject* parent) :
 	QTcpServer(parent),

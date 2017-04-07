@@ -15,7 +15,7 @@
 #include <QSignalMapper>
 #include <QtNetwork>
 
-#include "request.hpp"
+#include "mcrequest.hpp"
 #include "mcserver.hpp"
 
 /**

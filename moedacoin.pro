@@ -32,25 +32,25 @@ SOURCES += src/main.cpp\
            src/mcwallet.cpp \
            src/mcdb.cpp \
     src/publickeyviewdialog.cpp \
-    src/transaction.cpp \
     src/moedanetwork.cpp \
-    src/request.cpp \
     src/mcsignature.cpp \
     src/mccrypto.cpp \
     src/sendcoindialog.cpp\
-    src/mcserver.cpp
+    src/mcserver.cpp \
+    src/mcrequest.cpp \
+    src/mctransaction.cpp
 
 HEADERS  += include/moedacoin.hpp \
     include/mcwallet.hpp \
     include/publickeyviewdialog.hpp \
     include/mcdb.hpp \
-    include/transaction.hpp \
     include/moedanetwork.hpp \
-    include/request.hpp \
     include/mcsignature.hpp \
     include/mccrypto.hpp \
     include/sendcoindialog.hpp\
-    include/mcserver.hpp
+    include/mcserver.hpp \
+    include/mcrequest.hpp \
+    include/mctransaction.hpp
 
 FORMS    += ui/moedacoin.ui \
     ui/publickeyviewdialog.ui \

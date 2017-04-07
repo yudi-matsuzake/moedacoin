@@ -17,7 +17,7 @@ public:
 	~SendCoinDialog();
 
 	QString getPubKey();
-	float getValue();
+	double getValue();
 
 private:
 	Ui::SendCoinDialog *ui;

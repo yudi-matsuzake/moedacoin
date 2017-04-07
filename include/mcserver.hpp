@@ -11,7 +11,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-#include "request.hpp"
+#include "mcrequest.hpp"
 
 /** Class to wrap a request and emit the signals appropriately
   *

@@ -38,11 +38,11 @@ MoedaCoin::~MoedaCoin()
 void MoedaCoin::setButtons()
 {
 	if(walletSuccefullyOpen){
-		ui->centralWidget->setEnabled(true);
-		ui->actionMining->setEnabled(true);
-		ui->actionSaveWallet->setEnabled(true);
-		ui->actionSendMoedacoin->setEnabled(true);
 		ui->actionPublicKey->setEnabled(true);
+		ui->actionSendMoedacoin->setEnabled(dbIsUpdated);
+		ui->centralWidget->setEnabled(dbIsUpdated);
+		ui->actionMining->setEnabled(dbIsUpdated);
+		ui->actionSaveWallet->setEnabled(dbIsUpdated);
 
 		qDebug() << "Setting buttons: enable";
 
@@ -89,7 +89,7 @@ void MoedaCoin::initTable()
 
 void MoedaCoin::atualizeTable()
 {
-	QList<Transaction> transactions =
+	QList<MCTransaction> transactions =
 			moedaDB->getAllTransactions();
 
 	int transactionsSize = transactions.size();
@@ -123,9 +123,16 @@ void MoedaCoin::onResponseDB(
 			<< "response_db: "
 			<< QJsonDocument(j).toBinaryData();
 
+		/*
+		 * set old local db for the synched[1] new one.
+		 *
+		 * [1] http://bit.ly/21nremo
+		 */
 		moedaDB->setFromBase64(response->getDbData());
 		this->atualizeTable();
+		dbIsUpdated = true;
 	}
+	setButtons();
 
 }
 
@@ -147,7 +154,7 @@ void MoedaCoin::on_actionSaveWallet_triggered()
 	QString wallet_filename = QFileDialog::getSaveFileName(
 				this,
 				tr("Save Moedacoin Wallet"),
-				"/home", tr("Moedacoin Wallet *.mcwallet"));
+				QDir::current().path(), tr("Moedacoin Wallet *.mcwallet"));
 
 	if(!wallet_filename.endsWith(".mcwallet")){
 		wallet_filename += ".mcwallet";
@@ -162,7 +169,7 @@ void MoedaCoin::on_actionOpenWallet_triggered()
 	QString wallet_filename = QFileDialog::getOpenFileName(
 				this,
 				tr("Open Moedacoin Wallet"),
-				"/home", tr("Moedacoin Wallet *.mcwallet"));
+				QDir::current().path(), tr("Moedacoin Wallet *.mcwallet"));
 	qDebug() << "onOpen: " << wallet_filename;
 
 	QFileInfo file(wallet_filename);
@@ -263,11 +270,51 @@ void MoedaCoin::on_actionSendMoedacoin_triggered()
 			new SendCoinDialog());
 
 	if(dialog->exec() == QDialog::Accepted){
-		QString pubkey = dialog->getPubKey();
-		float value = dialog->getValue();
+		qDebug() << "sendcoinddialog: accepted!";
+		QString toPubKey = dialog->getPubKey();
+		double value = dialog->getValue();
 
 		qDebug() << "send " << value << " to pubkey: ";
-		qDebug() << pubkey;
+		qDebug() << toPubKey;
+
+		/*
+		 * build the transaction
+		 */
+		qDebug() << "building the transaction";
+		MCTransaction transaction;
+
+		std::string pubKeyStdString = wallet->writePubKeyToMemBuf();
+		transaction.setFromKey(QString(pubKeyStdString.c_str()));
+		transaction.setToKey(toPubKey);
+		transaction.setValue(value);
+
+		// TODO: suposted id??
+		// transaction.setId();
+
+		/*
+		 * build the signature
+		 */
+		qDebug() << "building the signature";
+		QJsonObject jTransaction;
+		transaction.write(jTransaction);
+
+		QByteArray buf = QJsonDocument(jTransaction)
+				.toJson(QJsonDocument::Compact);
+
+		MCSignature signature = MCCrypto::signature(
+					*wallet, (unsigned char*)buf.data(), buf.size());
+
+		/*
+		 * build the request
+		 */
+		qDebug() << "building the request";
+		MCRequestMiner* request = new MCRequestMiner(transaction, signature);
+		QJsonObject jRequest;
+		request->write(jRequest);
+		qDebug().noquote() << QJsonDocument(jRequest)
+				      .toJson(QJsonDocument::Indented);
+
+		delete request;
 	}
 }
 

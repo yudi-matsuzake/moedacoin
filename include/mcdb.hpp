@@ -6,7 +6,7 @@
 #include <QFileInfo>
 #include <QSqlQuery>
 #include <QDebug>
-#include "transaction.hpp"
+#include "mctransaction.hpp"
 #include "mccrypto.hpp"
 
 /**
@@ -25,7 +25,7 @@ bool fileExists(QString path);
  * @return Total amount of MoedaCoins
  */
 
-float walletTotalCoins(QList<Transaction> tList, QString pKey);
+float walletTotalCoins(QList<MCTransaction> tList, QString pKey);
 
 /**
  * @brief Class to abstract all database functions
@@ -62,19 +62,19 @@ public:
 	 * @brief Function that return all transactions
 	 * @return QList which cointains all the transactions
 	 */
-	QList<Transaction> getAllTransactions();
+	QList<MCTransaction> getAllTransactions();
 	/**
 	 * @brief Function that return all the transactions given an User's Public key
 	 * @param pKey Public key of the User
 	 * @return QList which contains the transactions
 	 */
 
-	QList<Transaction> getTransactionsByKey(QString pKey);
+	QList<MCTransaction> getTransactionsByKey(QString pKey);
 	/**
 	 * @brief Fuction that return the List of all the users
 	 * @return QList which contains every user
 	 */
-	QList<User> getAllUsers();
+	QList<MCUser> getAllUsers();
 
 	/**
 	 * @brief Function to convert the database into base64

@@ -109,6 +109,35 @@ std::vector<unsigned char> base64Decode(QString& encode)
 	return v;
 }
 
+QString base64Encode(const QString& v)
+{
+	QByteArray m(v.toUtf8());
+
+	size_t size = m.size();
+	char* buffer = NULL;
+	base64_encode((unsigned char*)m.data(), size, &buffer);
+
+	QString r(buffer);
+	delete buffer;
+
+	return r;
+}
+
+QString base64Decode(const QString& v)
+{
+	unsigned char* buffer = NULL;
+
+	QByteArray m(v.toUtf8());
+
+	size_t size;
+	base64_decode(m.data(), &buffer, &size);
+
+	delete buffer;
+
+	return QString((char*)buffer);
+
+}
+
 MCSignature signature(
 		MCWallet &wallet,
 		const unsigned char* msg,

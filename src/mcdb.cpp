@@ -26,9 +26,9 @@ bool fileExists(QString path){
 }
 
 
-float walletTotalCoins(QList<Transaction> tList, QString pKey){
+float walletTotalCoins(QList<MCTransaction> tList, QString pKey){
 	float total = 10;
-	foreach (Transaction t, tList) {
+	foreach (MCTransaction t, tList) {
 			if (!(QString::compare(pKey, t.getToKey()))){
 				total += t.getValue();
 			}
@@ -94,11 +94,11 @@ QSqlError MCDB::addNewTransaction(QString from, QString to, QString miner, float
 }
 
 
-QList<Transaction> MCDB::getAllTransactions(){
+QList<MCTransaction> MCDB::getAllTransactions(){
 	QSqlQuery q("SELECT * FROM transactions", *mc_db);
-	QList<Transaction> result;
+	QList<MCTransaction> result;
 	while (q.next()){
-			result.append(Transaction(q.value(0).toInt(), q.value(1).toString(),
+			result.append(MCTransaction(q.value(0).toInt(), q.value(1).toString(),
 						      q.value(2).toString(), q.value(4).toString(),
 						      q.value(3).toFloat()));
 	}
@@ -107,14 +107,14 @@ QList<Transaction> MCDB::getAllTransactions(){
 }
 
 
-QList<Transaction> MCDB::getTransactionsByKey(QString pKey){
+QList<MCTransaction> MCDB::getTransactionsByKey(QString pKey){
 	QSqlQuery q(*mc_db);
 	q.prepare("SELECT * FROM transactions WHERE toKey like :k OR fromKey like :k OR minKey like :k");
 	q.bindValue(":k", pKey);
-	QList<Transaction> result;
+	QList<MCTransaction> result;
 	q.exec();
 	while (q.next()){
-			result.append(Transaction(q.value(0).toInt(), q.value(1).toString(),
+			result.append(MCTransaction(q.value(0).toInt(), q.value(1).toString(),
 						      q.value(2).toString(), q.value(4).toString(),
 						      q.value(3).toFloat()));
 	}
@@ -156,12 +156,12 @@ QSqlError MCDB::initDB(const QString& path)
 }
 
 
-QList<User> MCDB::getAllUsers(){
+QList<MCUser> MCDB::getAllUsers(){
 	QSqlQuery q("SELECT * FROM info", *mc_db);
-	QList<User> result;
+	QList<MCUser> result;
 
 	while (q.next()){
-			result.append(User(q.value(1).toString(), q.value(0).toString()));
+			result.append(MCUser(q.value(1).toString(), q.value(0).toString()));
 	}
 
 	return result;

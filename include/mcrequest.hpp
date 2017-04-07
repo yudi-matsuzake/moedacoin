@@ -5,6 +5,9 @@
 #include <QJsonObject>
 #include <QHostAddress>
 
+#include "mcsignature.hpp"
+#include "mctransaction.hpp"
+
 class MCResponseDB;
 
 /**
@@ -31,7 +34,6 @@ private:
 	QHostAddress address;
 	int port;
 };
-
 
 /*
  * REQUESTS -----------------------------------
@@ -84,16 +86,22 @@ private:
 class MCRequestMiner : public MCRequest{
 public:
 	MCRequestMiner();
+	MCRequestMiner(const MCTransaction& t, const MCSignature& s);
 	~MCRequestMiner();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
 
-private:
+	MCSignature getSignature() const;
+	void setSignature(const MCSignature &value);
 
+	MCTransaction getTransaction() const;
+	void setTransaction(const MCTransaction &value);
+
+private:
 	const static QString method;
-	QString sign;
-	// transaction
+	MCSignature signature;
+	MCTransaction transaction;
 	// challenge?
 };
 

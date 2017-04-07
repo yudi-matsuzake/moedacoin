@@ -1,18 +1,19 @@
-#include "request.hpp"
+#include "mcrequest.hpp"
 
 /*
  * address ---------------------------------------------------
  */
 MCAddress::MCAddress()
+	: address("0.0.0.0"),
+	  port(0)
 {}
 
 MCAddress::MCAddress(
 		QHostAddress address,
 		int port)
-{
-	this->address	= address;
-	this->port	= port;
-}
+	: address(address),
+	  port(port)
+{}
 
 MCAddress::~MCAddress()
 {}
@@ -226,4 +227,81 @@ void MCResponseDB::setDbData(QString s)
 MCRequestDB* MCResponseDB::getRequest()
 {
 	return this->request;
+}
+
+/*
+ * miner_request
+ */
+const QString MCRequestMiner::method = "miner_request";
+
+MCRequestMiner::MCRequestMiner()
+{
+}
+
+MCRequestMiner::MCRequestMiner(
+		const MCTransaction& t,
+		const MCSignature& s)
+{
+	this->transaction = t;
+	this->signature = s;
+}
+
+MCRequestMiner::~MCRequestMiner()
+{
+}
+
+MCSignature MCRequestMiner::getSignature() const
+{
+	return signature;
+}
+
+void MCRequestMiner::setSignature(const MCSignature &value)
+{
+	signature = value;
+}
+
+MCTransaction MCRequestMiner::getTransaction() const
+{
+	return transaction;
+}
+
+void MCRequestMiner::setTransaction(const MCTransaction &value)
+{
+	transaction = value;
+}
+
+bool MCRequestMiner::read(const QJsonObject& json)
+{
+	if(!MCRequest::read(json))
+		return false;
+
+	if(json["method"] != this->method)
+		return false;
+
+	if(!this->signature.read(json["signature"].toObject()))
+		return false;
+
+	if(!this->transaction.read(json["transaction"].toObject()))
+		return false;
+
+	return true;
+}
+
+bool MCRequestMiner::write(QJsonObject& json)
+{
+	if(!MCRequest::write(json))
+		return false;
+	json["method"]		= this->method;
+
+	QJsonObject jSignature;
+	if(!this->signature.write(jSignature))
+		return false;
+	json["signature"] = jSignature;
+
+	QJsonObject jTransaction;
+	if(!this->transaction.write(jTransaction))
+		return false;
+	json["transaction"] = jTransaction;
+
+	return true;
 }

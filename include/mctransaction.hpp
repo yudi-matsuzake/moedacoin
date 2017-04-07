@@ -2,24 +2,27 @@
 #define TRANSACTION_HPP
 
 #include <QString>
+#include <QJsonObject>
+
+#include "mccrypto.hpp"
+
 /**
  * @brief The User class
  */
 
-class User
+class MCUser
 {
-
 public:
 	/**
 	 * @brief User constructor without iniatializing anything
 	 */
-	explicit User();
+	explicit MCUser();
 	/**
 	 * @brief User constructor overload
 	 * @param name Name of the user
 	 * @param pKey Public key of the user
 	 */
-	explicit User(QString name, QString pKey);
+	explicit MCUser(QString name, QString pKey);
 	QString publicKey;
 	QString nome;
 private:
@@ -30,13 +33,13 @@ private:
  * @brief The Transaction class
  */
 
-class Transaction
+class MCTransaction
 {
 public:
 	/**
 	 * @brief Transaction constructor without initialazing anything
 	 */
-	explicit Transaction();
+	explicit MCTransaction();
 	/**
 	 * @brief Transaction constructor overload
 	 * @param id Id of the transaction
@@ -45,8 +48,8 @@ public:
 	 * @param minKey Miner Public key
 	 * @param v Value of the transaction
 	 */
-	explicit Transaction(int id, QString fKey, QString tkey, QString minKey, float v);
-	~Transaction();
+	explicit MCTransaction(int id, QString fKey, QString tkey, QString minKey, float v);
+	~MCTransaction();
 
 	QString getFromKey() const;
 	void setFromKey(const QString &value);
@@ -58,16 +61,20 @@ public:
 	void setMinKey(const QString &value);
 
 	float getValue() const;
-	void setValue(float value);
+	void setValue(double value);
 
 	int getId() const;
 	void setId(int value);
 
+	bool read(const QJsonObject& json);
+	bool write(QJsonObject& json);
+
 private:
+	static const QString JSON_TYPE;
 	QString fromKey;
 	QString toKey;
 	QString minKey;
-	float value;
+	double value;
 	int id;
 };
 

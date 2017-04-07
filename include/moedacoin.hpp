@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-#include "request.hpp"
+#include "mcrequest.hpp"
 #include "moedanetwork.hpp"
 #include "mcwallet.hpp"
 #include "mcsignature.hpp"
