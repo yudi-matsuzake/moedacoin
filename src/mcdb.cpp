@@ -87,6 +87,16 @@ QSqlError MCDB::addNewTransaction(QString from, QString to, QString miner, float
 	q.bindValue(":tk", to);
 	q.bindValue(":mk", miner);
 	q.bindValue(":v", QString::number(value));
+
+	if (!verifyUserExistance(from))
+		addNewUser(from, from.left(8));
+
+	if (!verifyUserExistance(to))
+		addNewUser(to, to.left(8));
+
+	if (!verifyUserExistance(miner))
+		addNewUser(miner, miner.left(8));
+
 	if (!q.exec())
 		return q.lastError();
 
@@ -153,6 +163,17 @@ QSqlError MCDB::initDB(const QString& path)
 	}
 
 	return QSqlError();
+}
+
+bool MCDB::verifyUserExistance(QString pubKey){
+	QSqlQuery q(*mc_db);
+	q.prepare("SELECT * FROM users WHERE pub_key like :k");
+	q.bindValue(":k", pubKey);
+	q.exec();
+	if (q.next())
+		return true;
+
+	return false;
 }
 
 

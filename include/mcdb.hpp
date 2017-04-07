@@ -87,6 +87,7 @@ public:
 	 * @param base64 buffer containing all the database
 	 */
 	void setFromBase64(QString baseBuffer);
+
 	~MCDB();
 
 private:
@@ -103,6 +104,14 @@ private:
 	 * @return Error, if so
 	 */
 	QSqlError createNewDatabase();
+
+	/**
+	 * @brief Fuction to verify if an user exists
+	 * @param pubKey public key from the user
+	 * @return Exists or doesn't exists
+	 */
+
+	bool verifyUserExistance(QString pubKey);
 };
 
 #endif // MCDB_H
