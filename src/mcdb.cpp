@@ -20,6 +20,18 @@ void MCDB::setFromBase64(QString baseBuffer){
 }
 
 
+int MCDB::nextID(){
+	QSqlQuery q;
+	q.exec("SELECT COUNT(*) FROM transactions");
+
+	if (q.next())
+		return q.value(0).toInt() + 1;
+
+	else
+		return -1;
+}
+
+
 bool fileExists(QString path){
 	QFileInfo info(path);
 	return info.exists() && info.isFile();

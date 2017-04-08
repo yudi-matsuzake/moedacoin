@@ -88,6 +88,12 @@ public:
 	 */
 	void setFromBase64(QString baseBuffer);
 
+	/**
+	 * @brief Founction to return the next ID of a transaction
+	 * @return -1 if query failed, the ID otherwhise
+	 */
+	int nextID();
+
 	~MCDB();
 
 private:
