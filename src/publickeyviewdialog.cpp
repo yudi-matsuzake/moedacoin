@@ -8,4 +8,5 @@ PublicKeyViewDialog::PublicKeyViewDialog(
 	ui.setupUi(this);
 	this->pubkey = pubkey;
 	ui.publicKeyViewTextEdit->setText(this->pubkey);
+	ui.publicKeyViewTextEdit->selectAll();
 }

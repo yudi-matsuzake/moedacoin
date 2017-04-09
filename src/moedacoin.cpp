@@ -6,7 +6,9 @@ MoedaCoin::MoedaCoin(QWidget *parent) :
 	ui(new Ui::MoedaCoin),
 	dbIsUpdated(false),
 	walletSuccefullyOpen(false),
-	net(new MoedaNetwork)
+	net(new MoedaNetwork),
+	mineIcon(":/icons/minet-512x512.png"),
+	mineMovie(":/icons/loading.gif")
 {
 	ui->setupUi(this);
 	setButtons();
@@ -44,6 +46,14 @@ MoedaCoin::MoedaCoin(QWidget *parent) :
 		this,
 		SLOT(onResponseMiner(MCResponseMiner*)));
 
+	/*
+	 * connects the mining gif to set the icon of the
+	 * mining action
+	 * connects the mining gif to restart when finished
+	 */
+	connect(&mineMovie, SIGNAL(frameChanged(int)), this, SLOT(setMineIcon(int)));
+	if (mineMovie.loopCount() != -1)
+		connect(&mineMovie, SIGNAL(finished()), &mineMovie, SLOT(start()));
 }
 
 MoedaCoin::~MoedaCoin()
@@ -148,6 +158,7 @@ void MoedaCoin::onResponseDB(
 		this->atualizeTable();
 		dbIsUpdated = true;
 	}
+	updateMCCLabel();
 	setButtons();
 
 }
@@ -497,6 +508,32 @@ void MoedaCoin::on_actionSendMoedacoin_triggered()
 	}
 }
 
+void MoedaCoin::updateMCCLabel()
+{
+	QString pubkey(wallet->writePubKeyToMemBuf().c_str());
+	float mcc = moedaDB->getWalletBalance(pubkey);
+
+	QString labelText = QString("%1 MCC")
+				.arg(QString::number(mcc));
+
+	ui->userMCCLabel->setText(labelText);
+}
+
 void MoedaCoin::on_actionAbout_triggered()
 {
+}
+
+void MoedaCoin::setMineIcon(int)
+{
+	ui->actionMining->setIcon(mineMovie.currentPixmap());
+}
+
+void MoedaCoin::on_actionMining_toggled(bool tongle)
+{
+	if(tongle){
+		mineMovie.start();
+	}else{
+		mineMovie.stop();
+		ui->actionMining->setIcon(mineIcon);
+	}
 }

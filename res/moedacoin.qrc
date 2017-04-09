@@ -3,5 +3,6 @@
         <file>icons/minet-512x512.png</file>
         <file>icons/public-key-512x512.png</file>
         <file>icons/send-coin-512x512.png</file>
+        <file>icons/loading.gif</file>
     </qresource>
 </RCC>

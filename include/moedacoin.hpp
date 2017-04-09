@@ -10,6 +10,9 @@
 #include <QFileDialog>
 #include <QDebug>
 #include <QHeaderView>
+#include <QAction>
+#include <QIcon>
+#include <QMovie>
 
 #include "mcrequest.hpp"
 #include "moedanetwork.hpp"
@@ -49,6 +52,9 @@ private slots:
 	void onResponseMiner(MCResponseMiner* request);
 	void onRequestMiner(MCRequestMiner* request);
 
+	void on_actionMining_toggled(bool arg1);
+
+	void setMineIcon(int frame);
 private:
 	Ui::MoedaCoin *ui;
 
@@ -59,6 +65,9 @@ private:
 
 	std::unique_ptr<MCDB> moedaDB;
 	std::unique_ptr<MoedaNetwork> net;
+
+	QIcon mineIcon;
+	QMovie mineMovie;
 
 	/**
 	 * @brief sets the enable property of main window based
@@ -99,6 +108,11 @@ private:
 	 * @brief createNewBD function
 	 */
 	void createNewBD();
+
+	/**
+	 * @brief Updates the label MCC
+	 */
+	void updateMCCLabel();
 
 	/**
 	 * @brief Mine a request
