@@ -40,6 +40,8 @@ public:
 	 */
 	void send(MCRequestDB* request);
 	void send(MCResponseDB* request);
+	void send(MCRequestMiner* request);
+	void send(MCResponseMiner* request);
 
 	/** Gets the ip of the machine.
 	  *
@@ -64,9 +66,23 @@ signals:
 	  */
 	void requestDB (MCRequestDB* requestDB);
 
+	/** This signal is emitted when a ResponseMIner is received
+	  *
+	  * @param	responseMiner is the reference to the responseMiner
+	  * 		that came from the network
+	  */
+	void responseMiner(MCResponseMiner* responseMiner);
+
+	/** This signal is emmited when miner request is received
+	  *
+	  * @param request
+	  */
+	void requestMiner(MCRequestMiner* request);
+
 private slots:
 	void onReceiveDatagrams();
 	void onResponseDbConnect();
+	void onResponseMiner();
 
 private:
 	/*
@@ -81,6 +97,7 @@ private:
 	QHostAddress multicastGroupAddress;
 
 	std::map<QTcpSocket*, MCResponseDB*> responseDbMap;
+	std::map<QUdpSocket*, MCRequestMiner*> requestMinerMap;
 
 	void initMulticast();
 };

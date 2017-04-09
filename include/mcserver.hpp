@@ -2,6 +2,7 @@
 #define __MCSERVER_H__
 
 #include <memory>
+#include <list>
 
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -33,7 +34,6 @@ private slots:
 
 private:
 	MCRequestDB* request;
-	QTcpSocket* socket;
 	static const unsigned int WAIT_RESPONSE_MS;
 };
 

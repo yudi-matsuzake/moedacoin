@@ -57,6 +57,21 @@ bool MCTransaction::write(QJsonObject &json)
 	return true;
 }
 
+
+bool MCTransaction::operator==(MCTransaction& a)
+{
+	return	this->id == a.getId()
+		&& this->value == a.getValue()
+		&& this->fromKey == a.getFromKey()
+		&& this->toKey == a.getToKey()
+		&& this->minKey == a.getMinKey();
+}
+
+bool MCTransaction::operator!=(MCTransaction& a)
+{
+	return !(this->operator==(a));
+}
+
 QString MCTransaction::getFromKey() const
 {
 	return fromKey;

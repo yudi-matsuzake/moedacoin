@@ -3,8 +3,7 @@
 const unsigned int MCServer::WAIT_RESPONSE_MS = 10000;
 
 MCServer::MCServer(MCRequestDB* r, QObject* parent) :
-	QTcpServer(parent),
-	socket(NULL)
+	QTcpServer(parent)
 {
 	this->request = r;
 	connect(this,
@@ -19,6 +18,7 @@ MCServer::~MCServer()
 void MCServer::onReadyRead()
 {
 	qDebug() << "MCServer: receive db_response!";
+	QTcpSocket* socket = dynamic_cast<QTcpSocket*>(sender());
 	QByteArray tmpbuf = socket->readAll();
 
 	QJsonObject json =
@@ -31,12 +31,14 @@ void MCServer::onReadyRead()
 	MCResponseDB* r = new MCResponseDB;
 
 	if(r->read(json)){
+		qDebug() << "MCServer: valid json!";
 		socket->disconnectFromHost();
 		socket->close();
 
 		close();
 		emit response(request, r);
 	}else{
+		qDebug() << "MCServer: valid json!";
 		if(socket && socket->isOpen())
 			socket->disconnectFromHost();
 		delete r;
@@ -54,13 +56,6 @@ void MCServer::timerStart()
 void MCServer::onTimeout()
 {
 	if(this->isListening()){
-		if(this->socket){
-			socket->disconnectFromHost();
-			socket->close();
-		}
-
-		this->close();
-
 		close();
 		emit response(request, NULL);
 	}
@@ -68,7 +63,7 @@ void MCServer::onTimeout()
 
 void MCServer::onNewConnection()
 {
-	socket = nextPendingConnection();
+	QTcpSocket* socket = nextPendingConnection();
 	connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
 	connect(socket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
 }

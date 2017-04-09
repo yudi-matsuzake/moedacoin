@@ -69,6 +69,9 @@ public:
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
 
+	bool operator==(MCTransaction& a);
+	bool operator!=(MCTransaction& a);
+
 private:
 	static const QString JSON_TYPE;
 	QString fromKey;

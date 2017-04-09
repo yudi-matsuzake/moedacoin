@@ -1,6 +1,8 @@
 #include "mcdb.hpp"
 #include <iostream>
 
+const float MCDB::INIT_WALLET_MCC = 10.0;
+
 QString MCDB::toBase64(){
 	QFile f(dbPath);
 	f.open(QIODevice::ReadOnly);
@@ -27,16 +29,14 @@ bool fileExists(QString path){
 
 
 float walletTotalCoins(QList<MCTransaction> tList, QString pKey){
-	float total = 10;
+	float total = MCDB::INIT_WALLET_MCC;
 	foreach (MCTransaction t, tList) {
-			if (!(QString::compare(pKey, t.getToKey()))){
-				total += t.getValue();
-			}
-
-			else if (!(QString::compare(pKey, t.getFromKey())))
-				total -= t.getValue();
-			else
-				total += 100/(float)t.getId();
+		if (!(QString::compare(pKey, t.getToKey()))){
+			total += t.getValue();
+		}else if (!(QString::compare(pKey, t.getFromKey())))
+			total -= t.getValue();
+		else
+			total += 100/(float)t.getId();
 	}
 
 	return total;
@@ -167,6 +167,10 @@ QList<MCUser> MCDB::getAllUsers(){
 	return result;
 }
 
+float MCDB::getWalletBalance(QString pubkey)
+{
+	return walletTotalCoins(getTransactionsByKey(pubkey), pubkey);
+}
 
 MCDB::~MCDB()
 {

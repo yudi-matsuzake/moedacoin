@@ -2,7 +2,7 @@
 
 const QString MoedaNetwork::MULTICAST_IP = "239.255.43.21";
 const short MoedaNetwork::MULTICAST_PORT = 6060;
-const short MoedaNetwork::TTL = 1;
+const short MoedaNetwork::TTL = 5;
 
 /*
  * moedanetwork
@@ -48,12 +48,28 @@ void MoedaNetwork::onReceiveDatagrams()
 	qDebug().noquote() << "Receive multicast: " << doc.toJson(QJsonDocument::Indented);
 
 	{
+		qDebug() << "MCNetwork: testing for MCRequestDB";
 		MCRequestDB* r = new MCRequestDB;
-		if(r->read(json))
+		if(r->read(json)){
+			qDebug() << "MCNetwork: emit requestDB";
 			emit requestDB(r);
-		else
+			return;
+		}else{
+			qDebug() << "MCNetwork: not a valid MCRequestDB";
 			delete r;
-		return;
+		}
+	}
+	{
+		qDebug() << "MCNetwork: testing for MCRequestMiner";
+		MCRequestMiner* r = new MCRequestMiner;
+		if(r->read(json)){
+			qDebug() << "MCNetwork: emit requestMiner";
+			emit requestMiner(r);
+			return;
+		}else{
+			qDebug() << "MCNetwork: not a valid MCRequestMiner";
+			delete r;
+		}
 	}
 }
 
@@ -93,6 +109,42 @@ void MoedaNetwork::onResponseDbConnect()
 	QByteArray buffer(doc.toBinaryData());
 	socket->write(buffer);
 	socket->disconnectFromHost();
+}
+
+void MoedaNetwork::onResponseMiner()
+{
+	QUdpSocket* socket = dynamic_cast<QUdpSocket*>(sender());
+	assert(socket);
+
+	QByteArray datagram;
+
+	while (socket->hasPendingDatagrams()){
+		datagram.resize(socket->pendingDatagramSize());
+		socket->readDatagram(
+				datagram.data(),
+				datagram.size());
+	}
+	qDebug() << "Miner response: " << datagram;
+
+	/*
+	 * build the json
+	 */
+	auto iterator = requestMinerMap.find(socket);
+	MCRequestMiner* request = iterator->second;
+	QJsonDocument doc = QJsonDocument::fromBinaryData(datagram);
+	QJsonObject json = doc.object();
+	MCResponseMiner* response = new MCResponseMiner(request);
+
+	if(response->read(json)){
+		qDebug() << "miner_response is valid!!!";
+		requestMinerMap.erase(iterator);
+		socket->close();
+		emit responseMiner(response);
+	}else{
+		qDebug() << "miner_response is invalid!!!";
+		delete response;
+	}
+
 }
 
 void MoedaNetwork::send(MCResponseDB* response)
@@ -153,4 +205,49 @@ void MoedaNetwork::send(MCRequestDB* request)
 	request->write(j);
 	QJsonDocument jdoc(j);
 	sendMulticast(jdoc.toBinaryData());
+}
+
+void MoedaNetwork::send(MCRequestMiner *request)
+{
+	QUdpSocket* socket = new QUdpSocket(this);
+	assert(socket->bind());
+	qDebug() << "Waiting for miner in "
+		 << socket->localAddress() << ":"
+		 << socket->localPort();
+	connect(socket, SIGNAL(readyRead()), this, SLOT(onResponseMiner()));
+
+	/*
+	 * maps the socket with the request
+	 */
+	std::pair<QUdpSocket*,MCRequestMiner*> pair(socket, request);
+	requestMinerMap.insert(pair);
+
+	/*
+	 * put the waiting port and address in the request
+	 */
+	MCAddress addressResponse(socket->localAddress(), socket->localPort());
+	request->setResponseAddress(addressResponse);
+
+	/*
+	 * sends the request
+	 */
+	QJsonObject j;
+	request->write(j);
+	QJsonDocument jdoc(j);
+	sendMulticast(jdoc.toBinaryData());
+}
+
+void MoedaNetwork::send(MCResponseMiner* response)
+{
+	QUdpSocket* socket = new QUdpSocket(this);
+	MCAddress addr = response->getRequest()->getResponseAddress();
+	socket->connectToHost(addr.getAddress(),
+			      addr.getPort(),
+			      QAbstractSocket::WriteOnly);
+
+	QJsonObject j;
+	response->write(j);
+	QJsonDocument jdoc(j);
+	QByteArray jbinary(jdoc.toBinaryData());
+	socket->write(jbinary);
 }
