@@ -147,6 +147,101 @@ MCAddress MCRequestDB::getResponseAddress() const
 }
 
 /*
+ * miner_request
+ */
+const QString MCRequestMiner::method = "miner_request";
+
+MCRequestMiner::MCRequestMiner()
+{
+}
+
+MCRequestMiner::MCRequestMiner(
+		const MCTransaction& t,
+		const MCSignature& s)
+{
+	this->transaction = t;
+	this->signature = s;
+}
+
+MCRequestMiner::~MCRequestMiner()
+{
+}
+
+MCSignature MCRequestMiner::getSignature() const
+{
+	return signature;
+}
+
+void MCRequestMiner::setSignature(const MCSignature &value)
+{
+	signature = value;
+}
+
+MCTransaction MCRequestMiner::getTransaction() const
+{
+	return transaction;
+}
+
+void MCRequestMiner::setTransaction(const MCTransaction &value)
+{
+	transaction = value;
+}
+
+MCAddress MCRequestMiner::getResponseAddress() const
+{
+	return responseAddress;
+}
+
+void MCRequestMiner::setResponseAddress(const MCAddress &value)
+{
+	responseAddress = value;
+}
+
+bool MCRequestMiner::read(const QJsonObject& json)
+{
+	if(!MCRequest::read(json))
+		return false;
+
+	if(json["method"] != this->method)
+		return false;
+
+	if(!this->signature.read(json["signature"].toObject()))
+		return false;
+
+	if(!this->transaction.read(json["transaction"].toObject()))
+		return false;
+
+	if(!this->responseAddress.read(json["responseAddress"].toObject()))
+		return false;
+
+	return true;
+}
+
+bool MCRequestMiner::write(QJsonObject& json)
+{
+	if(!MCRequest::write(json))
+		return false;
+	json["method"]		= this->method;
+
+	QJsonObject jSignature;
+	if(!this->signature.write(jSignature))
+		return false;
+	json["signature"] = jSignature;
+
+	QJsonObject jTransaction;
+	if(!this->transaction.write(jTransaction))
+		return false;
+	json["transaction"] = jTransaction;
+
+	QJsonObject jAddress;
+	if(!this->responseAddress.write(jAddress))
+		return false;
+	json["responseAddress"] = jAddress;
+
+	return true;
+}
+
+/*
  * response -----------------------------------------------
  */
 const QString MCResponse::JSON_TYPE = "response";
@@ -191,7 +286,6 @@ MCResponseDB::~MCResponseDB()
 
 bool MCResponseDB::read(const QJsonObject &json)
 {
-	qDebug() << "MCResponseDB";
 	if(!MCResponse::read(json))
 		return false;
 
@@ -230,78 +324,110 @@ MCRequestDB* MCResponseDB::getRequest()
 }
 
 /*
- * miner_request
+ * response_miner
  */
-const QString MCRequestMiner::method = "miner_request";
+const QString MCResponseMiner::method = "response_miner";
 
-MCRequestMiner::MCRequestMiner()
-{
-}
+MCResponseMiner::MCResponseMiner(MCRequestMiner* request)
+	: accepted(false),
+	  request(request)
+{}
 
-MCRequestMiner::MCRequestMiner(
-		const MCTransaction& t,
-		const MCSignature& s)
-{
-	this->transaction = t;
-	this->signature = s;
-}
+MCResponseMiner::~MCResponseMiner()
+{}
 
-MCRequestMiner::~MCRequestMiner()
+bool MCResponseMiner::read(const QJsonObject &json)
 {
-}
-
-MCSignature MCRequestMiner::getSignature() const
-{
-	return signature;
-}
-
-void MCRequestMiner::setSignature(const MCSignature &value)
-{
-	signature = value;
-}
-
-MCTransaction MCRequestMiner::getTransaction() const
-{
-	return transaction;
-}
-
-void MCRequestMiner::setTransaction(const MCTransaction &value)
-{
-	transaction = value;
-}
-
-bool MCRequestMiner::read(const QJsonObject& json)
-{
-	if(!MCRequest::read(json))
+	if(!MCResponse::read(json))
 		return false;
 
-	if(json["method"] != this->method)
+	if(json["method"].toString() != this->method)
 		return false;
 
-	if(!this->signature.read(json["signature"].toObject()))
+	this->accepted = json["accepted"].toBool();
+
+	QJsonObject jTransaction = json["transaction"].toObject();
+	if(!this->transaction.read(jTransaction))
 		return false;
 
-	if(!this->transaction.read(json["transaction"].toObject()))
+	QJsonObject jSignature = json["signature"].toObject();
+	if(!this->signature.read(jSignature))
 		return false;
+
+	this->reason = json["reason"].toString();
 
 	return true;
 }
 
-bool MCRequestMiner::write(QJsonObject& json)
+bool MCResponseMiner::write(QJsonObject &json)
 {
-	if(!MCRequest::write(json))
+	if(!MCResponse::write(json))
 		return false;
+
 	json["method"]		= this->method;
+	json["accepted"	]	= this->accepted;
+
+	QJsonObject jTransaction;
+	if(!this->transaction.write(jTransaction))
+		return false;
+	json["transaction"]	= jTransaction;
 
 	QJsonObject jSignature;
 	if(!this->signature.write(jSignature))
 		return false;
 	json["signature"] = jSignature;
 
-	QJsonObject jTransaction;
-	if(!this->transaction.write(jTransaction))
-		return false;
-	json["transaction"] = jTransaction;
+	json["reason"] = this->reason;
 
 	return true;
+}
+
+bool MCResponseMiner::getAccepted() const
+{
+	return accepted;
+}
+
+void MCResponseMiner::setAccepted(bool value)
+{
+	accepted = value;
+}
+
+MCSignature MCResponseMiner::getSignature() const
+{
+	return signature;
+}
+
+void MCResponseMiner::setSignature(const MCSignature &value)
+{
+	signature = value;
+}
+
+MCRequestMiner *MCResponseMiner::getRequest() const
+{
+	return request;
+}
+
+void MCResponseMiner::setRequest(MCRequestMiner *value)
+{
+	request = value;
+}
+
+QString MCResponseMiner::getReason() const
+{
+	return reason;
+}
+
+void MCResponseMiner::setReason(const QString &value)
+{
+	reason = value;
+}
+
+MCTransaction MCResponseMiner::getTransaction() const
+{
+	return transaction;
+}
+
+void MCResponseMiner::setTransaction(const MCTransaction &value)
+{
+	transaction = value;
 }

@@ -1,6 +1,9 @@
 #ifndef TOPCOIN_HPP
 #define TOPCOIN_HPP
 
+#include <memory>
+#include <vector>
+
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QJsonDocument>
@@ -8,12 +11,10 @@
 #include <QDebug>
 #include <QHeaderView>
 
-#include <memory>
-#include <vector>
-
 #include "mcrequest.hpp"
 #include "moedanetwork.hpp"
 #include "mcwallet.hpp"
+#include "mccrypto.hpp"
 #include "mcsignature.hpp"
 #include "publickeyviewdialog.hpp"
 #include "sendcoindialog.hpp"
@@ -45,6 +46,8 @@ private slots:
 
 	void onResponseDB(MCRequestDB* request, MCResponseDB* response);
 	void onRequestDB(MCRequestDB* request);
+	void onResponseMiner(MCResponseMiner* request);
+	void onRequestMiner(MCRequestMiner* request);
 
 private:
 	Ui::MoedaCoin *ui;
@@ -96,6 +99,13 @@ private:
 	 * @brief createNewBD function
 	 */
 	void createNewBD();
+
+	/**
+	 * @brief Mine a request
+	 * @param request the request to mine
+	 * @return a reference to the response object
+	 */
+	MCResponseMiner* mine(MCRequestMiner* request);
 };
 
 #endif // TOPCOIN_HPP

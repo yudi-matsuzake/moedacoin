@@ -1,4 +1,4 @@
-#ifndef REQUEST_HPP
+﻿#ifndef REQUEST_HPP
 #define REQUEST_HPP
 
 #include <QObject>
@@ -98,10 +98,14 @@ public:
 	MCTransaction getTransaction() const;
 	void setTransaction(const MCTransaction &value);
 
+	MCAddress getResponseAddress() const;
+	void setResponseAddress(const MCAddress &value);
+
 private:
 	const static QString method;
 	MCSignature signature;
 	MCTransaction transaction;
+	MCAddress responseAddress;
 	// challenge?
 };
 
@@ -170,18 +174,35 @@ private:
  */
 class MCResponseMiner : public MCResponse{
 public:
-	MCResponseMiner();
+	MCResponseMiner(MCRequestMiner* request = NULL);
 	~MCResponseMiner();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
 
+	bool getAccepted() const;
+	void setAccepted(bool value);
+
+	MCSignature getSignature() const;
+	void setSignature(const MCSignature &value);
+
+	MCRequestMiner *getRequest() const;
+	void setRequest(MCRequestMiner *value);
+
+	QString getReason() const;
+	void setReason(const QString &value);
+
+	MCTransaction getTransaction() const;
+	void setTransaction(const MCTransaction &value);
+
 private:
 	const static QString method;
 	bool accepted;
-	QString sign;
+	MCTransaction transaction;
+	MCSignature signature;
+	MCRequestMiner* request;
+	QString reason;
 
-	//transaction
 	//challenge?
 };
 

@@ -31,6 +31,12 @@ public:
 	 */
 	bool verifySignature(MCWallet& wallet);
 
+	std::vector<unsigned char> getMsg() const;
+	void setMsg(const std::vector<unsigned char> &value);
+
+	std::vector<unsigned char> getSignature() const;
+	void setSignature(const std::vector<unsigned char> &value);
+
 private:
 	std::vector<unsigned char> msg;
 	std::vector<unsigned char> signature;

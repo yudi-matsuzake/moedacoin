@@ -42,6 +42,26 @@ bool MCSignature::verifySignature(MCWallet &wallet)
 				signature.size());
 }
 
+std::vector<unsigned char> MCSignature::getMsg() const
+{
+	return msg;
+}
+
+void MCSignature::setMsg(const std::vector<unsigned char> &value)
+{
+	msg = value;
+}
+
+std::vector<unsigned char> MCSignature::getSignature() const
+{
+	return signature;
+}
+
+void MCSignature::setSignature(const std::vector<unsigned char> &value)
+{
+	signature = value;
+}
+
 
 bool MCSignature::write(QJsonObject& json)
 {
