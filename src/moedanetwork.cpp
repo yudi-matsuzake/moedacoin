@@ -49,11 +49,25 @@ void MoedaNetwork::onReceiveDatagrams()
 
 	{
 		MCRequestDB* r = new MCRequestDB;
-		if(r->read(json))
+		if(r->read(json)){
 			emit requestDB(r);
+			return;
+		}
+
 		else
 			delete r;
-		return;
+	}
+
+	{
+		MCRequestUpdate* r = new MCRequestUpdate;
+		if (r->read(json)){
+			emit requestUpdate(r);
+			return;
+		}
+
+		else
+			delete r;
+
 	}
 }
 
@@ -153,4 +167,17 @@ void MoedaNetwork::send(MCRequestDB* request)
 	request->write(j);
 	QJsonDocument jdoc(j);
 	sendMulticast(jdoc.toBinaryData());
+}
+
+void MoedaNetwork::send(MCRequestUpdate* request){
+
+	QJsonObject j;
+
+	if(request->write(j)){
+		QJsonDocument jdoc(j);
+		sendMulticast(jdoc.toBinaryData());
+	}
+
+	else
+		qDebug() << "Failed to create Update Json";
 }

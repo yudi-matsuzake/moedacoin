@@ -95,6 +95,7 @@ public:
 	MCSignature getSignature() const;
 	void setSignature(const MCSignature &value);
 
+
 	MCTransaction getTransaction() const;
 	void setTransaction(const MCTransaction &value);
 
@@ -111,15 +112,18 @@ private:
 class MCRequestUpdate : public MCRequest{
 public:
 	MCRequestUpdate();
+	MCRequestUpdate(const MCTransaction& t);//,const MCSignature& s);
 	~MCRequestUpdate();
 
 	bool read(const QJsonObject& json);
 	bool write(QJsonObject& json);
 
+	MCTransaction getTransaction() const;
+
 private:
 	const static QString method;
-	//transaction
-	QString minerSign;
+	MCTransaction transaction;
+	//MCSignature signature;
 };
 
 /*

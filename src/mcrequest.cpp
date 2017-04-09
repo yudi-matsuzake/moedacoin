@@ -270,6 +270,7 @@ void MCRequestMiner::setTransaction(const MCTransaction &value)
 	transaction = value;
 }
 
+
 bool MCRequestMiner::read(const QJsonObject& json)
 {
 	if(!MCRequest::read(json))
@@ -304,4 +305,69 @@ bool MCRequestMiner::write(QJsonObject& json)
 	json["transaction"] = jTransaction;
 
 	return true;
+}
+
+/* Update request*/
+
+const QString MCRequestUpdate::method = "update_request";
+
+MCRequestUpdate::MCRequestUpdate()
+{
+}
+
+MCRequestUpdate::MCRequestUpdate(
+		const MCTransaction& t)//,
+		//const MCSignature& s)
+{
+	this->transaction = t;
+//	this->signature = s;
+}
+
+MCRequestUpdate::~MCRequestUpdate()
+{
+}
+
+bool MCRequestUpdate::read(const QJsonObject& json){
+	if(!MCRequest::read(json))
+		return false;
+
+	if (json["method"].toString() != this->method)
+		return false;
+
+	//if (!this->signature.read(json["signature"].toObject()))
+	//	return false;
+
+
+	if (!this->transaction.read(json["transaction"].toObject()))
+		return false;
+
+	return true;
+}
+
+bool MCRequestUpdate::write(QJsonObject& json){
+
+	if (!MCRequest::write(json))
+		return false;
+
+	json["method"] = this->method;
+
+	QJsonObject jTransaction;
+	if (!this->transaction.write(jTransaction))
+		return false;
+
+	json["transaction"] = jTransaction;
+
+
+	//QJsonObject jSignature;
+	//if (!this->signature.write(jSignature))
+	//	return false;
+
+	//json["signature"] = jSignature;
+
+	return true;
+}
+
+MCTransaction MCRequestUpdate::getTransaction() const
+{
+	return transaction;
 }

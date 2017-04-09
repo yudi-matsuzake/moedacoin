@@ -45,6 +45,7 @@ private slots:
 
 	void onResponseDB(MCRequestDB* request, MCResponseDB* response);
 	void onRequestDB(MCRequestDB* request);
+	void onRequestUpdate(MCRequestUpdate* request);
 
 private:
 	Ui::MoedaCoin *ui;

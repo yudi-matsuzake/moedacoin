@@ -40,6 +40,7 @@ public:
 	 */
 	void send(MCRequestDB* request);
 	void send(MCResponseDB* request);
+	void send(MCRequestUpdate* request);
 
 	/** Gets the ip of the machine.
 	  *
@@ -63,6 +64,12 @@ signals:
 	  * @param requestDB	a reference to the requestDB
 	  */
 	void requestDB (MCRequestDB* requestDB);
+
+	/**
+	 * @brief This signal is emitted when a requestUpdate was received
+	 * @param request a reference to requestUpdate
+	 */
+	void requestUpdate(MCRequestUpdate* request);
 
 private slots:
 	void onReceiveDatagrams();

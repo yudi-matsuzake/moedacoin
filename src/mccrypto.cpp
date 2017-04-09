@@ -132,9 +132,10 @@ QString base64Decode(const QString& v)
 	size_t size;
 	base64_decode(m.data(), &buffer, &size);
 
+	QString r = QString((char*)buffer);
 	delete buffer;
 
-	return QString((char*)buffer);
+	return r;
 
 }
 

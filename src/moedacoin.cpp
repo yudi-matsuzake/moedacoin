@@ -28,6 +28,12 @@ MoedaCoin::MoedaCoin(QWidget *parent) :
 		this,
 		SLOT(onRequestDB(MCRequestDB*)));
 
+	/* connects onRequestUpdate to the request of Update*/
+	connect(net.get(),
+		SIGNAL(requestUpdate(MCRequestUpdate*)),
+		this,
+		SLOT(onRequestUpdate(MCRequestUpdate*)));
+
 }
 
 MoedaCoin::~MoedaCoin()
@@ -318,6 +324,26 @@ void MoedaCoin::on_actionSendMoedacoin_triggered()
 	}
 }
 
+void MoedaCoin::onRequestUpdate(MCRequestUpdate* request){
+
+	qDebug() << "Updated needed!!";
+
+	MCTransaction t = request->getTransaction();
+
+
+	qDebug() << "Calling function to atualize db";
+
+	moedaDB->addNewTransaction(t.getFromKey(), t.getToKey(), t.getMinKey(), t.getValue());
+
+	qDebug() << "Db Updated";
+
+	atualizeTable();
+
+}
+
 void MoedaCoin::on_actionAbout_triggered()
 {
+	MCTransaction t(33, "oi", "oi2", "oi3", 6.5);
+	MCRequestUpdate* r = new MCRequestUpdate(t);
+	net->send(r);
 }
