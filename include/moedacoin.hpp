@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <vector>
+#include <list>
+#include <unistd.h>
 
 #include <QMainWindow>
 #include <QMessageBox>
@@ -68,6 +70,8 @@ private:
 
 	QIcon mineIcon;
 	QMovie mineMovie;
+
+	std::list<MCTransaction> pendingTransactions;
 
 	/**
 	 * @brief sets the enable property of main window based

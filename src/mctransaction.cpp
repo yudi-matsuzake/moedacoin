@@ -17,8 +17,8 @@ MCTransaction::MCTransaction(int id, QString fKey, QString tKey, QString mKey, f
 	this->id = id;
 }
 
-
 const QString MCTransaction::JSON_TYPE = "transaction";
+const float MCTransaction::VALUE_INTERVAL = 0.0001;
 
 MCTransaction::MCTransaction()
 {
@@ -62,7 +62,8 @@ bool MCTransaction::write(QJsonObject &json)
 bool MCTransaction::operator==(MCTransaction& a)
 {
 	return	this->id == a.getId()
-		&& this->value == a.getValue()
+		&& this->value >= a.getValue()-VALUE_INTERVAL
+		&& this->value <= a.getValue()+VALUE_INTERVAL
 		&& this->fromKey == a.getFromKey()
 		&& this->toKey == a.getToKey()
 		&& this->minKey == a.getMinKey();

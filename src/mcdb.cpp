@@ -1,7 +1,8 @@
 #include "mcdb.hpp"
 #include <iostream>
 
-const float MCDB::INIT_WALLET_MCC = 10.0;
+const float MCDB::INIT_WALLET_MCC	= 10.0;
+const float MCDB::MINE_CONSTANT		= 10.0;
 
 QString MCDB::toBase64(){
 	QFile f(dbPath);
@@ -49,7 +50,7 @@ float walletTotalCoins(QList<MCTransaction> tList, QString pKey){
 		}else if (!(QString::compare(pKey, t.getFromKey().trimmed())))
 			total -= t.getValue();
 		else
-			total += 100/(float)t.getId();
+			total += MCDB::MINE_CONSTANT/(float)t.getId();
 	}
 
 	return total;

@@ -34,6 +34,7 @@ class MCDB : QObject
 
 public:
 	static const float INIT_WALLET_MCC;
+	static const float MINE_CONSTANT;
 
 	/**
 	 * @brief MCDB Constructor

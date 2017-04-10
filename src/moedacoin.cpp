@@ -128,8 +128,10 @@ void MoedaCoin::atualizeTable()
 				.trimmed();
 
 	int transactionsSize = transactions.size();
-	ui->transactionTableWidget->setRowCount(transactionsSize);
-	for (int i = 0; i < transactionsSize; i++){
+	int pendingTransactionsSize = pendingTransactions.size();
+	ui->transactionTableWidget->setRowCount(transactionsSize + pendingTransactionsSize);
+	int i = 0;
+	for (i = 0; i < transactionsSize; i++){
 
 		MCTransaction transaction = transactions.at(i);
 		QString fromKey = transaction.getFromKey();
@@ -167,6 +169,50 @@ void MoedaCoin::atualizeTable()
 			ui->transactionTableWidget->item(i, 2)->setFont(font);
 		else if(myPubKey == transaction.getMinKey().trimmed())
 			ui->transactionTableWidget->item(i, 4)->setFont(font);
+	}
+
+	for (std::list<MCTransaction>::iterator iterator = pendingTransactions.begin();
+		iterator != pendingTransactions.end() ;
+		++iterator){
+
+		QString fromKey = iterator->getFromKey();
+		QString toKey = iterator->getToKey();
+		QString minerKey = iterator->getMinKey();
+
+		QString fromKeyCel = fromKey.split(QChar('\n')).at(2);
+		QString subString = fromKeyCel.mid(0, 6);
+		fromKeyCel = subString + "...";
+
+		QString toKeyCel = toKey.split(QChar('\n')).at(2);
+		subString = toKeyCel.mid(0, 6);
+		toKeyCel = subString + "...";
+
+		QString minerKeyCel;
+		if(!minerKey.size()){
+			minerKeyCel = "Pending...";
+		}else{
+			minerKeyCel = minerKey.split(QChar('\n')).at(2);
+			subString = minerKeyCel.mid(0, 6);
+			minerKeyCel = subString + "...";
+		}
+
+		ui->transactionTableWidget->setItem(
+			i, 0, new QTableWidgetItem(QString::number(iterator->getId())));
+		ui->transactionTableWidget->setItem(
+			i, 1, new QTableWidgetItem(fromKeyCel));
+		ui->transactionTableWidget->setItem(
+			i, 2, new QTableWidgetItem(toKeyCel));
+		ui->transactionTableWidget->setItem(
+			i, 3, new QTableWidgetItem(QString::number(iterator->getValue())));
+		ui->transactionTableWidget->setItem(
+			i, 4, new QTableWidgetItem(minerKeyCel));
+		ui->transactionTableWidget->item(i, 0)->setFlags(0);
+		ui->transactionTableWidget->item(i, 1)->setFlags(0);
+		ui->transactionTableWidget->item(i, 2)->setFlags(0);
+		ui->transactionTableWidget->item(i, 3)->setFlags(0);
+		ui->transactionTableWidget->item(i, 4)->setFlags(0);
+
+		i++;
 	}
 }
 
@@ -275,10 +321,12 @@ void MoedaCoin::onRequestMiner(MCRequestMiner* request)
 {
 	qDebug() << "miner request received";
 	bool mining = this->ui->actionMining->isChecked();
+	MCTransaction transaction = request->getTransaction();
+	pendingTransactions.push_back(transaction);
+	atualizeTable();
 
 	if(mining){
 		qDebug() << "im mining";
-		MCTransaction transaction = request->getTransaction();
 		MCSignature signature = request->getSignature();
 
 		/*
@@ -323,6 +371,12 @@ void MoedaCoin::onRequestMiner(MCRequestMiner* request)
 		if(toKey == fromKey){
 			QString r = tr("The transaction cannot have the same key "
 				    "to send and receive the value!");
+			qDebug() << r;
+
+			accepted = false;
+			reason = r;
+		}else if(transaction.getId() != moedaDB->nextID()){
+			QString r = tr("The transaction id is invalid! Try again.");
 			qDebug() << r;
 
 			accepted = false;
@@ -384,12 +438,17 @@ void MoedaCoin::onRequestUpdate(MCRequestUpdate* request){
 
 	MCTransaction t = request->getTransaction();
 
-
 	qDebug() << "Calling function to atualize db";
 
 	moedaDB->addNewTransaction(t.getFromKey(), t.getToKey(), t.getMinKey(), t.getValue());
 
 	qDebug() << "Db Updated";
+
+	for(std::list<MCTransaction>::iterator i = pendingTransactions.begin();
+	    i != pendingTransactions.end(); ++i){
+		if(i->getId() == t.getId())
+			i = pendingTransactions.erase(i);
+	}
 
 	atualizeTable();
 	updateMCCLabel();
@@ -533,6 +592,7 @@ void MoedaCoin::on_actionSendMoedacoin_triggered()
 		transaction.setFromKey(QString(pubKeyStdString.c_str()));
 		transaction.setToKey(toPubKey);
 		transaction.setValue(value);
+		transaction.setId(moedaDB->nextID());
 
 		// TODO: suposted id??
 		// transaction.setId();
