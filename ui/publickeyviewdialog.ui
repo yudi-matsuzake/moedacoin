@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>650</width>
-    <height>400</height>
+    <width>611</width>
+    <height>366</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <property name="font">
       <font>
        <family>Ubuntu Mono derivative Powerline</family>
-       <pointsize>14</pointsize>
+       <pointsize>12</pointsize>
        <italic>true</italic>
       </font>
      </property>

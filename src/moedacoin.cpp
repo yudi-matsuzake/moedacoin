@@ -522,6 +522,7 @@ void MoedaCoin::on_actionNewWallet_triggered()
 			createNewBD();
 			this->atualizeTable();
 			setButtons();
+			on_actionSaveWallet_triggered();
 		}
 	}
 }
