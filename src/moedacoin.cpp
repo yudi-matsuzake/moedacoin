@@ -201,8 +201,11 @@ void MoedaCoin::onResponseMiner(MCResponseMiner* response)
 
 		if(signature.verifySignature(minerWallet)){
 			qDebug() << "onResponseMiner: The miner signed";
+			qDebug() << "Requesting a database update";
+			MCRequestUpdate* r = new MCRequestUpdate(transaction);
+			net->send(r);
 		}else{
-			qDebug() << "onResponseMiner: The miner does not signed";
+			qDebug() << "onResponseMiner: The miner did not sign";
 		}
 
 	}

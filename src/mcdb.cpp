@@ -79,12 +79,12 @@ QSqlError MCDB::createNewDatabase(){
 QSqlError MCDB::addNewUser(QString pub_key, QString name){
 	QSqlQuery q(*mc_db);
 	q.prepare("INSERT INTO users(pub_key) VALUES (:p)");
-	q.bindValue(":p", pub_key);
+	q.bindValue(":p", pub_key.trimmed());
 	if (!q.exec())
 		return q.lastError();
 	q.prepare("INSERT INTO info(pub_key, name) VALUES (:p, :n)");
-	q.bindValue(":p", pub_key);
-	q.bindValue(":n", name);
+	q.bindValue(":p", pub_key.trimmed());
+	q.bindValue(":n", name.trimmed());
 	if (!q.exec())
 		return q.lastError();
 
@@ -95,9 +95,9 @@ QSqlError MCDB::addNewUser(QString pub_key, QString name){
 QSqlError MCDB::addNewTransaction(QString from, QString to, QString miner, float value){
 	QSqlQuery q(*mc_db);
 	q.prepare("INSERT INTO transactions(fromKey, toKey, minKey, value) VALUES (:fk, :tk, :mk, :v)");
-	q.bindValue(":fk", from);
-	q.bindValue(":tk", to);
-	q.bindValue(":mk", miner);
+	q.bindValue(":fk", from.trimmed());
+	q.bindValue(":tk", to.trimmed());
+	q.bindValue(":mk", miner.trimmed());
 	q.bindValue(":v", QString::number(value));
 
 	if (!verifyUserExistance(from))
@@ -132,7 +132,7 @@ QList<MCTransaction> MCDB::getAllTransactions(){
 QList<MCTransaction> MCDB::getTransactionsByKey(QString pKey){
 	QSqlQuery q(*mc_db);
 	q.prepare("SELECT * FROM transactions WHERE toKey like :k OR fromKey like :k OR minKey like :k");
-	q.bindValue(":k", pKey);
+	q.bindValue(":k", pKey.trimmed());
 	QList<MCTransaction> result;
 	q.exec();
 	while (q.next()){
@@ -180,7 +180,7 @@ QSqlError MCDB::initDB(const QString& path)
 bool MCDB::verifyUserExistance(QString pubKey){
 	QSqlQuery q(*mc_db);
 	q.prepare("SELECT * FROM users WHERE pub_key like :k");
-	q.bindValue(":k", pubKey);
+	q.bindValue(":k", pubKey.trimmed());
 	q.exec();
 	if (q.next())
 		return true;
