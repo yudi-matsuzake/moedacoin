@@ -74,6 +74,7 @@ public:
 
 private:
 	static const QString JSON_TYPE;
+	static const float VALUE_INTERVAL;
 	QString fromKey;
 	QString toKey;
 	QString minKey;

@@ -42,10 +42,11 @@ bool fileExists(QString path){
 
 float walletTotalCoins(QList<MCTransaction> tList, QString pKey){
 	float total = MCDB::INIT_WALLET_MCC;
+	pKey = pKey.trimmed();
 	foreach (MCTransaction t, tList) {
-		if (!(QString::compare(pKey, t.getToKey()))){
+		if (!(QString::compare(pKey, t.getToKey().trimmed()))){
 			total += t.getValue();
-		}else if (!(QString::compare(pKey, t.getFromKey())))
+		}else if (!(QString::compare(pKey, t.getFromKey().trimmed())))
 			total -= t.getValue();
 		else
 			total += 100/(float)t.getId();
@@ -136,9 +137,11 @@ QList<MCTransaction> MCDB::getTransactionsByKey(QString pKey){
 	QList<MCTransaction> result;
 	q.exec();
 	while (q.next()){
-			result.append(MCTransaction(q.value(0).toInt(), q.value(1).toString(),
-						      q.value(2).toString(), q.value(4).toString(),
-						      q.value(3).toFloat()));
+		result.append(MCTransaction(
+				q.value(0).toInt(),
+				q.value(1).toString(),
+				q.value(2).toString(), q.value(4).toString(),
+				q.value(3).toFloat()));
 	}
 
 	return result;

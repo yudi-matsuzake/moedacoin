@@ -124,19 +124,49 @@ void MoedaCoin::atualizeTable()
 	QList<MCTransaction> transactions =
 			moedaDB->getAllTransactions();
 
+	QString myPubKey = QString(wallet->writePubKeyToMemBuf().c_str())
+				.trimmed();
+
 	int transactionsSize = transactions.size();
 	ui->transactionTableWidget->setRowCount(transactionsSize);
 	for (int i = 0; i < transactionsSize; i++){
+
+		MCTransaction transaction = transactions.at(i);
+		QString fromKey = transaction.getFromKey();
+		QString toKey = transaction.getToKey();
+		QString minerKey = transaction.getMinKey();
+
+		QString fromKeyCel = fromKey.split(QChar('\n')).at(2);
+		QString subString = fromKeyCel.mid(0, 6);
+		fromKeyCel = subString + "...";
+
+		QString toKeyCel = toKey.split(QChar('\n')).at(2);
+		subString = toKeyCel.mid(0, 6);
+		toKeyCel = subString + "...";
+
+		QString minerKeyCel = minerKey.split(QChar('\n')).at(2);
+		subString = minerKeyCel.mid(0, 6);
+		minerKeyCel = subString + "...";
+
 		ui->transactionTableWidget->setItem(
-			i, 0, new QTableWidgetItem(QString::number(transactions.at(i).getId())));
+			i, 0, new QTableWidgetItem(QString::number(transaction.getId())));
 		ui->transactionTableWidget->setItem(
-			i, 1, new QTableWidgetItem(transactions.at(i).getFromKey()));
+			i, 1, new QTableWidgetItem(fromKeyCel));
 		ui->transactionTableWidget->setItem(
-			i, 2, new QTableWidgetItem(transactions.at(i).getToKey()));
+			i, 2, new QTableWidgetItem(toKeyCel));
 		ui->transactionTableWidget->setItem(
-			i, 3, new QTableWidgetItem(QString::number(transactions.at(i).getValue())));
+			i, 3, new QTableWidgetItem(QString::number(transaction.getValue())));
 		ui->transactionTableWidget->setItem(
-			i, 4, new QTableWidgetItem(transactions.at(i).getMinKey()));
+			i, 4, new QTableWidgetItem(minerKeyCel));
+
+		QFont font;
+		font.setBold(true);
+		if(myPubKey == transaction.getFromKey().trimmed())
+			ui->transactionTableWidget->item(i, 1)->setFont(font);
+		else if(myPubKey == transaction.getToKey().trimmed())
+			ui->transactionTableWidget->item(i, 2)->setFont(font);
+		else if(myPubKey == transaction.getMinKey().trimmed())
+			ui->transactionTableWidget->item(i, 4)->setFont(font);
 	}
 }
 
@@ -274,7 +304,7 @@ void MoedaCoin::onRequestMiner(MCRequestMiner* request)
 		std::string myKey = wallet->pubKeyToString();
 		std::string fromKey = fromWallet.pubKeyToString();
 		std::string toKey = toWallet.pubKeyToString();
-		QString toKeyPEM = transaction.getToKey();
+		QString fromKeyPEM = transaction.getFromKey();
 
 		/*
 		 * begin to test the condition
@@ -304,7 +334,7 @@ void MoedaCoin::onRequestMiner(MCRequestMiner* request)
 
 			accepted = false;
 			reason = r;
-		}else if(moedaDB->getWalletBalance(toKeyPEM) < transaction.getValue()){
+		}else if(moedaDB->getWalletBalance(fromKeyPEM) < transaction.getValue()){
 			QString r = tr("A wallet must to have the moedacoins to send them!");
 			qDebug() << r;
 
@@ -362,6 +392,7 @@ void MoedaCoin::onRequestUpdate(MCRequestUpdate* request){
 	qDebug() << "Db Updated";
 
 	atualizeTable();
+	updateMCCLabel();
 }
 
 void MoedaCoin::on_actionSaveWallet_triggered()

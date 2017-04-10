@@ -26,7 +26,8 @@ MCTransaction::MCTransaction()
 	this->id = 0.0;
 }
 
-MCTransaction::~MCTransaction(){
+MCTransaction::~MCTransaction()
+{
 
 }
 
