@@ -42,6 +42,7 @@ public:
 	void send(MCResponseDB* request);
 	void send(MCRequestMiner* request);
 	void send(MCResponseMiner* request);
+	void send(MCRequestUpdate* request);
 
 	/** Gets the ip of the machine.
 	  *
@@ -78,6 +79,12 @@ signals:
 	  * @param request
 	  */
 	void requestMiner(MCRequestMiner* request);
+
+	/**
+	 * @brief This signal is emitted when a requestUpdate was received
+	 * @param request a reference to requestUpdate
+	 */
+	void requestUpdate(MCRequestUpdate* request);
 
 private slots:
 	void onReceiveDatagrams();

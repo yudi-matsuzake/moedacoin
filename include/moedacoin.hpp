@@ -46,13 +46,13 @@ private slots:
 	void on_actionPublicKey_triggered();
 	void on_actionSendMoedacoin_triggered();
 	void on_actionAbout_triggered();
+	void on_actionMining_toggled(bool arg1);
 
 	void onResponseDB(MCRequestDB* request, MCResponseDB* response);
 	void onRequestDB(MCRequestDB* request);
 	void onResponseMiner(MCResponseMiner* request);
 	void onRequestMiner(MCRequestMiner* request);
-
-	void on_actionMining_toggled(bool arg1);
+	void onRequestUpdate(MCRequestUpdate* request);
 
 	void setMineIcon(int frame);
 private:

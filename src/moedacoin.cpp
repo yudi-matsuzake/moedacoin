@@ -46,6 +46,12 @@ MoedaCoin::MoedaCoin(QWidget *parent) :
 		this,
 		SLOT(onResponseMiner(MCResponseMiner*)));
 
+	/* connects onRequestUpdate to the request of Update*/
+	connect(net.get(),
+		SIGNAL(requestUpdate(MCRequestUpdate*)),
+		this,
+		SLOT(onRequestUpdate(MCRequestUpdate*)));
+
 	/*
 	 * connects the mining gif to set the icon of the
 	 * mining action
@@ -339,6 +345,22 @@ void MoedaCoin::onRequestMiner(MCRequestMiner* request)
 
 }
 
+void MoedaCoin::onRequestUpdate(MCRequestUpdate* request){
+
+	qDebug() << "Updated needed!!";
+
+	MCTransaction t = request->getTransaction();
+
+
+	qDebug() << "Calling function to atualize db";
+
+	moedaDB->addNewTransaction(t.getFromKey(), t.getToKey(), t.getMinKey(), t.getValue());
+
+	qDebug() << "Db Updated";
+
+	atualizeTable();
+}
+
 void MoedaCoin::on_actionSaveWallet_triggered()
 {
 	QString wallet_filename = QFileDialog::getSaveFileName(
@@ -519,9 +541,9 @@ void MoedaCoin::updateMCCLabel()
 	ui->userMCCLabel->setText(labelText);
 }
 
+
 void MoedaCoin::on_actionAbout_triggered()
-{
-}
+{}
 
 void MoedaCoin::setMineIcon(int)
 {
