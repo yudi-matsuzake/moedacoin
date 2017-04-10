@@ -36,6 +36,8 @@ private:
 class MCTransaction
 {
 public:
+	static const QString DEFAULT_MINER_KEY;
+
 	/**
 	 * @brief Transaction constructor without initialazing anything
 	 */

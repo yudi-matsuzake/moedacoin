@@ -15,6 +15,7 @@
 #include <QAction>
 #include <QIcon>
 #include <QMovie>
+#include <QTimer>
 
 #include "mcrequest.hpp"
 #include "moedanetwork.hpp"
@@ -56,6 +57,8 @@ private slots:
 	void onRequestMiner(MCRequestMiner* request);
 	void onRequestUpdate(MCRequestUpdate* request);
 
+	void onTransactionTimeout();
+
 	void setMineIcon(int frame);
 private:
 	Ui::MoedaCoin *ui;
@@ -72,6 +75,10 @@ private:
 	QMovie mineMovie;
 
 	std::list<MCTransaction> pendingTransactions;
+
+	std::map<QTimer*, MCTransaction> transactionTimerMapper;
+
+	static const int TRANSACTION_TIMEOUT_MS;
 
 	/**
 	 * @brief sets the enable property of main window based

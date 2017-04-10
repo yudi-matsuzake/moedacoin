@@ -1,6 +1,8 @@
 #include "moedacoin.hpp"
 #include "ui_moedacoin.h"
 
+const int MoedaCoin::TRANSACTION_TIMEOUT_MS = 10000;
+
 MoedaCoin::MoedaCoin(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MoedaCoin),
@@ -188,13 +190,14 @@ void MoedaCoin::atualizeTable()
 		toKeyCel = subString + "...";
 
 		QString minerKeyCel;
-		if(!minerKey.size()){
-			minerKeyCel = "Pending...";
-		}else{
+		if(minerKey != MCTransaction::DEFAULT_MINER_KEY){
 			minerKeyCel = minerKey.split(QChar('\n')).at(2);
 			subString = minerKeyCel.mid(0, 6);
 			minerKeyCel = subString + "...";
+		}else{
+			minerKeyCel = minerKey + "...";
 		}
+
 
 		ui->transactionTableWidget->setItem(
 			i, 0, new QTableWidgetItem(QString::number(iterator->getId())));
@@ -322,8 +325,21 @@ void MoedaCoin::onRequestMiner(MCRequestMiner* request)
 	qDebug() << "miner request received";
 	bool mining = this->ui->actionMining->isChecked();
 	MCTransaction transaction = request->getTransaction();
+	/*
+	 * add in pending transactions
+	 */
 	pendingTransactions.push_back(transaction);
 	atualizeTable();
+
+	/*
+	 * inicialize the timer to remove the obsolete transaction
+	 */
+	QTimer* timer = new QTimer(this);
+	timer->setSingleShot(true);
+	std::pair<QTimer*, MCTransaction> p(timer, transaction);
+	transactionTimerMapper.insert(p);
+	timer->start(TRANSACTION_TIMEOUT_MS);
+	connect(timer, SIGNAL(timeout()), this, SLOT(onTransactionTimeout()));
 
 	if(mining){
 		qDebug() << "im mining";
@@ -446,7 +462,7 @@ void MoedaCoin::onRequestUpdate(MCRequestUpdate* request){
 
 	for(std::list<MCTransaction>::iterator i = pendingTransactions.begin();
 	    i != pendingTransactions.end(); ++i){
-		if(i->getId() == t.getId())
+		if(*i == t)
 			i = pendingTransactions.erase(i);
 	}
 
@@ -508,6 +524,38 @@ void MoedaCoin::on_actionNewWallet_triggered()
 			setButtons();
 		}
 	}
+}
+
+void MoedaCoin::onTransactionTimeout()
+{
+	qDebug() << "Transaction Timeout!";
+	QTimer* timer = dynamic_cast<QTimer*>(sender());
+	assert(timer);
+	MCTransaction t = transactionTimerMapper.at(timer);
+
+	bool transactionFound = false;
+	for(std::list<MCTransaction>::iterator i = pendingTransactions.begin();
+	    i != pendingTransactions.end(); ++i){
+		if(*i == t){
+			i = pendingTransactions.erase(i);
+			transactionFound = true;
+		}
+	}
+
+	delete timer;
+	atualizeTable();
+
+	QString myPubKey = QString(wallet->writePubKeyToMemBuf().c_str())
+				.trimmed();
+
+	if(transactionFound && t.getFromKey().trimmed() == myPubKey){
+		qDebug() << "obsolete transaction: critical";
+		QMessageBox::critical(this,
+				      tr("Obsolete transaction!"),
+				      tr("Nobody mined your transaction!"),
+				      QMessageBox::Ok);
+	}
+
 }
 
 int MoedaCoin::alreadyOpenWalletWarning()

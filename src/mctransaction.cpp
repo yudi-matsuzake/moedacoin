@@ -4,7 +4,8 @@ MCUser::MCUser(){
 
 }
 
-MCUser::MCUser(QString name, QString pKey){
+MCUser::MCUser(QString name, QString pKey)
+{
 	this->nome = name;
 	this->publicKey = pKey;
 }
@@ -18,12 +19,14 @@ MCTransaction::MCTransaction(int id, QString fKey, QString tKey, QString mKey, f
 }
 
 const QString MCTransaction::JSON_TYPE = "transaction";
+const QString MCTransaction::DEFAULT_MINER_KEY = "Pending";
 const float MCTransaction::VALUE_INTERVAL = 0.0001;
 
 MCTransaction::MCTransaction()
 {
 	this->value = 0.0;
 	this->id = 0.0;
+	this->minKey = DEFAULT_MINER_KEY;
 }
 
 MCTransaction::~MCTransaction()
@@ -66,7 +69,9 @@ bool MCTransaction::operator==(MCTransaction& a)
 		&& this->value <= a.getValue()+VALUE_INTERVAL
 		&& this->fromKey == a.getFromKey()
 		&& this->toKey == a.getToKey()
-		&& this->minKey == a.getMinKey();
+		&& (this->minKey == DEFAULT_MINER_KEY ||
+		    a.getMinKey() == DEFAULT_MINER_KEY ||
+		    this->minKey == a.getMinKey());
 }
 
 bool MCTransaction::operator!=(MCTransaction& a)
