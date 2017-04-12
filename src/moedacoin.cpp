@@ -217,6 +217,7 @@ void MoedaCoin::atualizeTable()
 
 		i++;
 	}
+	ui->transactionTableWidget->scrollToBottom();
 }
 
 void MoedaCoin::onResponseDB(
@@ -505,6 +506,7 @@ void MoedaCoin::on_actionOpenWallet_triggered()
 		dbIsUpdated = false;
 		setButtons();
 		createNewBD();
+		atualizeTable();
 	}
 }
 

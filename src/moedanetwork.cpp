@@ -238,7 +238,7 @@ void MoedaNetwork::send(MCRequestMiner *request)
 	/*
 	 * put the waiting port and address in the request
 	 */
-	MCAddress addressResponse(socket->localAddress(), socket->localPort());
+	MCAddress addressResponse(QHostAddress("0.0.0.0"), socket->localPort());
 	request->setResponseAddress(addressResponse);
 
 	/*
