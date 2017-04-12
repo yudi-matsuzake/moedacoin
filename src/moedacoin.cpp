@@ -223,6 +223,7 @@ void MoedaCoin::onResponseDB(
 	MCRequestDB* request,
 	MCResponseDB* response)
 {
+	if(!walletSuccefullyOpen) return;
 	if(!response){
 		qDebug() << "IEY! I'm updated (probabily)";
 		dbIsUpdated = true;
@@ -263,6 +264,7 @@ void MoedaCoin::onRequestDB(MCRequestDB* request)
 
 void MoedaCoin::onResponseMiner(MCResponseMiner* response)
 {
+	if(!walletSuccefullyOpen) return;
 	qDebug() << "onResponseMiner";
 	if(!response->getAccepted()){
 		qDebug() << "onResponseMiner: transaction was not accepted!";
@@ -322,6 +324,7 @@ MCResponseMiner* MoedaCoin::mine(MCRequestMiner* request)
 
 void MoedaCoin::onRequestMiner(MCRequestMiner* request)
 {
+	if(!walletSuccefullyOpen) return;
 	qDebug() << "miner request received";
 	bool mining = this->ui->actionMining->isChecked();
 	MCTransaction transaction = request->getTransaction();
@@ -448,8 +451,9 @@ void MoedaCoin::onRequestMiner(MCRequestMiner* request)
 
 }
 
-void MoedaCoin::onRequestUpdate(MCRequestUpdate* request){
-
+void MoedaCoin::onRequestUpdate(MCRequestUpdate* request)
+{
+	if(!walletSuccefullyOpen) return;
 	qDebug() << "Updated needed!!";
 
 	MCTransaction t = request->getTransaction();
@@ -498,9 +502,9 @@ void MoedaCoin::on_actionOpenWallet_triggered()
 	if(file.exists() && !file.isDir()){
 		openWallet(wallet_filename);
 		walletSuccefullyOpen = true;
-		createNewBD();
-		this->atualizeTable();
+		dbIsUpdated = false;
 		setButtons();
+		createNewBD();
 	}
 }
 
