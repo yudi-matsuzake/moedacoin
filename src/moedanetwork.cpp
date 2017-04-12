@@ -136,7 +136,6 @@ void MoedaNetwork::onResponseMiner()
 				datagram.data(),
 				datagram.size());
 	}
-	qDebug() << "Miner response: " << datagram;
 
 	/*
 	 * build the json
@@ -146,6 +145,8 @@ void MoedaNetwork::onResponseMiner()
 	QJsonDocument doc = QJsonDocument::fromBinaryData(datagram);
 	QJsonObject json = doc.object();
 	MCResponseMiner* response = new MCResponseMiner(request);
+
+	qDebug() << "Miner response: " << doc.toJson(QJsonDocument::Indented);
 
 	if(response->read(json)){
 		qDebug() << "miner_response is valid!!!";
@@ -253,6 +254,8 @@ void MoedaNetwork::send(MCResponseMiner* response)
 {
 	QUdpSocket* socket = new QUdpSocket(this);
 	MCAddress addr = response->getRequest()->getResponseAddress();
+	int ttl = 5;
+	setsockopt(socket->socketDescriptor(), IPPROTO_IP, IP_TTL, &ttl, sizeof(int));
 	socket->connectToHost(addr.getAddress(),
 			      addr.getPort(),
 			      QAbstractSocket::WriteOnly);

@@ -3,6 +3,9 @@
 
 #include <memory>
 #include <assert.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
 
 #include <QString>
 #include <QUdpSocket>
